@@ -9,18 +9,25 @@ function Program () {
 	this.canvasHeight = 500;//window.innerHeight;
 	this.canvasWidth = 700; //window.innerWidth;
 	
+	this.lights = [];
+	this.maxLights = 2;
+	this.cameras = [];
+	this.currentCamera = 0;
+	this.objectsToDraw = [];
+	
 	this.vertexShader = 
 		"attribute vec3 position;" +
 		"attribute vec3 normal;" +
 		"attribute vec2 texCoord;" +
 		
-		"uniform vec4 lightPosition;" +
+		"uniform vec4 lightPositions[" + this.maxLights +"];" +
 		"uniform mat4 modelMatrix;" +
 		"uniform mat4 viewMatrix;" +
 		"uniform mat4 projectionMatrix;" +
 		
 		"varying vec3 n;" +
-		"varying vec3 l;" +
+		"varying vec3 l[" + this.maxLights +"];" +
+		//"varying float lightDistances[" + this.maxLights +"];" +
 		"varying vec2 vTexCoord;" +
 		
 		"void main() {" +
@@ -28,40 +35,44 @@ function Program () {
 			"mat4 modelView = viewMatrix * modelMatrix;" +
 			
 			"vec4 normalCamCoords = modelView * vec4(normal, 0.0);" +
-			"vec4 positionCamCoords = modelView * vec4(position, 1.0);" +
-			"vec4 lightPositionCamCoords = viewMatrix * lightPosition;" +
-			
 			"n = normalize(normalCamCoords.xyz);" +
-			"l = normalize(lightPositionCamCoords.xyz - positionCamCoords.xyz);" +
 			
-			"gl_PointSize = 2.0;" +
+			"vec4 positionCamCoords = modelView * vec4(position, 1.0);" +
+			"for (int i = 0; i < " + this.maxLights +"; i++) {" +
+				//"lightDistances[i] = distance(lightPositions[i], vec4(position, 1.0));" +
+				"vec4 lightPositionCamCoords = viewMatrix * lightPositions[i];" +
+				"l[i] = normalize(lightPositionCamCoords.xyz - positionCamCoords.xyz);" +
+			"}" +
+			
 			"gl_Position = projectionMatrix * positionCamCoords;" +
 		"}";
 	this.fragmentShader = 
 		"precision mediump float;" +
 		
-		"uniform vec4 ambientProduct;" +
-		"uniform vec4 diffuseProduct;" +
+		"uniform vec4 ambientProduct[" + this.maxLights +"];" +
+		"uniform vec4 diffuseProduct[" + this.maxLights +"];" +
 		"uniform sampler2D texture;" +
 		
 		"varying vec3 n;" +
-		"varying vec3 l;" +
+		"varying vec3 l[" + this.maxLights +"];" +
+		//"varying float lightDistances[" + this.maxLights +"];" +
 		"varying vec2 vTexCoord;" +
 		
 		"void main() {" +
-			"vec4 ambient = ambientProduct;" +
-			"vec4 diffuse = max(dot(l, n), 0.0) * diffuseProduct;" +
-			"vec4 color = ambient + diffuse;" +
+			"vec4 color = vec4(0.0, 0.0, 0.0, 1.0);" +
+			
+			"for (int i = 0; i < " + this.maxLights +"; i++) {" +
+				//"float lightAttenuation = pow(max(0.0, 1.0 - lightDistances[i] / 20.0), 3.0);" +	
+				"vec4 ambient = ambientProduct[i];" +
+				"vec4 diffuse = max(dot(l[i], n), 0.0) * diffuseProduct[i];" +
+				"color += ambient + diffuse;" +
+			"}" + 
+			
 			"gl_FragColor = color * texture2D(texture, vTexCoord * 2.0);" +
 		"}";
 	
 	this.textureLoader = new TextureLoader();
 	this.modelLoader = new ModelLoader();
-	
-	this.lights = [];
-	this.cameras = [];
-	this.currentCamera = 0;
-	this.objectsToDraw = [];
 	
 	this.keyBuffer = [];
 	
@@ -140,7 +151,7 @@ Program.prototype = {
 		var lightCamToggle = $("<button> Light/Cam Toggle</button>");
 		
 		var handleButtonClick = function() {
-		if(this.modelInFocus === this.cameras[this.currentCamera]) {
+			if(this.modelInFocus === this.cameras[this.currentCamera]) {
 				this.modelInFocus = this.lights[0];
 			} else if(this.modelInFocus === this.lights[0]) {
 				this.modelInFocus = this.cameras[this.currentCamera];
@@ -274,6 +285,7 @@ Program.prototype = {
 		sceneObjects[3].setAsLightSource();
 		sceneObjects[3].scale(0.5, 0.5, 0.5);
 		sceneObjects[3].translate(-5, 0, 0);
+		sceneObjects[3].lightSource.increaseDiffuse(1.0, 0, 0);
 		this.lights.push(sceneObjects[3]);
 		this.objectsToDraw.push(sceneObjects[3]);
 		
@@ -320,21 +332,42 @@ Program.prototype = {
 	},
 	
 	establishLightingModel: function(sceneObject) {
-		//ambient product
-		var ambientProduct = vec3.multiply(vec3.create(), this.lights[0].lightSource.ambient, sceneObject.reflectionAmbient);
-		ambientProduct = vec4.fromValues(ambientProduct[0], ambientProduct[1], ambientProduct[2], 1.0);
+		var lights = this.lights,
+			ambientProducts = [],
+			diffuseProducts = [],
+			lightPositions = [];
+		
+		for (var i = 0, l = lights.length; i < l; i++) {
+			var ambientProduct = vec3.multiply(vec3.create(), this.lights[i].lightSource.ambient, sceneObject.reflectionAmbient);
+			ambientProducts.push(ambientProduct[0]);
+			ambientProducts.push(ambientProduct[1]);
+			ambientProducts.push(ambientProduct[2]);
+			ambientProducts.push(1.0);
+				
+			var diffuseProduct = vec3.multiply(vec3.create(), this.lights[0].lightSource.diffuse, sceneObject.reflectionDiffuse);
+			diffuseProducts.push(diffuseProduct[0]);
+			diffuseProducts.push(diffuseProduct[1]);
+			diffuseProducts.push(diffuseProduct[2]);
+			diffuseProducts.push(1.0);
+			
+			lightPositions.push(lights[i].getPosition()[0]);
+			lightPositions.push(lights[i].getPosition()[1]);
+			lightPositions.push(lights[i].getPosition()[2]);
+			lightPositions.push(lights[i].getPosition()[3]);
+		}
+		
+//		console.log(ambientProducts);
+//		console.log(diffuseProducts);
+//		console.log(new Float32Array(lightPositions));
+		
 		var ambientProductUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "ambientProduct");
-		this.gl.uniform4fv(ambientProductUniformLoc, ambientProduct);
-
-		//diffuse product
-		var diffuseProduct = vec3.multiply(vec3.create(), this.lights[0].lightSource.diffuse, sceneObject.reflectionDiffuse);
-		diffuseProduct = vec4.fromValues(diffuseProduct[0], diffuseProduct[1], diffuseProduct[2], 1.0);
+		this.gl.uniform4fv(ambientProductUniformLoc, new Float32Array(ambientProducts));
+		
 		var diffuseProductUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "diffuseProduct");
-		this.gl.uniform4fv(diffuseProductUniformLoc, diffuseProduct);
+		this.gl.uniform4fv(diffuseProductUniformLoc, new Float32Array(diffuseProducts));
 
-		//light position
 		var lightPositionUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "lightPosition");
-		this.gl.uniform4fv(lightPositionUniformLoc, this.lights[0].getPosition());
+		this.gl.uniform4fv(lightPositionUniformLoc, new Float32Array(lightPositions));
 	},
 	
 	prepareObjectTexture: function(glTexture) {
