@@ -8,7 +8,7 @@ function TextureLoader() {
 
 TextureLoader.prototype = {
 	loadTextureAsWebGLTexture: function(textureFileName, callingProgram) {
-		var glContext = callingProgram.gl;
+		var glContext = callingProgram.gl.gl();
 		var textureImage = new Image();
 		var handleTexture = function() {
 			var glTexture = glContext.createTexture();

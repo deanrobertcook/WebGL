@@ -5,9 +5,7 @@ $("#projectAnchor").click(function() {
 
 function Program () {	
 	this.view = new View();
-	
-	this.vertexShader = new VertexShaderFactory().shader;
-	this.fragmentShader = new FragmentShaderFactory().shader;
+	this.gl = null;
 	
 	this.textureLoader = new TextureLoader();
 	this.modelLoader = new ModelLoader();
@@ -18,11 +16,6 @@ function Program () {
 	this.objectsToDraw = [];
 	
 	this.keyBuffer = [];
-	
-	this.vertexPositionBuffer;
-	this.vertexNormalBuffer;
-	this.textureCoordBuffer;
-	this.vertexIndexBuffer;
 };
 
 Program.prototype = {
@@ -30,14 +23,11 @@ Program.prototype = {
 		this.view.constructGUI();
 		this.lastTime = (new Date()).getTime();
 		this.rotation = 0;
-
-		this.initgl();
-		this.vertexShader = this.loadShader("vertexShader");
-		this.fragmentShader = this.loadShader("fragmentShader");
-		this.initShaders();
-
-		this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-		this.gl.enable(this.gl.DEPTH_TEST);
+		
+		this.gl = new GLContext(this.view.getCanvas());
+		
+		this.gl.gl().clearColor(0.0, 0.0, 0.0, 1.0);
+		this.gl.gl().enable(this.gl.gl().DEPTH_TEST);
 
 		this.lastMouseXPos = 0;
 		this.lastMouseYPos = 0;
@@ -58,50 +48,6 @@ Program.prototype = {
 		this.loadTextures();
 	},
 	
-	initgl: function() {
-		try {
-			this.gl = this.view.getCanvas().getContext("experimental-webgl");
-		} catch (e) {
-			console.log("Couldn't initialise GL context" + e.message);
-		}
-
-		this.vertexPositionBuffer = this.gl.createBuffer();
-		this.vertexNormalBuffer = this.gl.createBuffer();
-		this.textureCoordBuffer = this.gl.createBuffer();
-		this.vertexIndexBuffer = this.gl.createBuffer();
-	},
-	
-	loadShader: function(shaderType) {
-		var shaderScript = this[shaderType];
-		var shader;
-
-		if(shaderType === "vertexShader") {
-			shader = this.gl.createShader(this.gl.VERTEX_SHADER);
-		} else if (shaderType === "fragmentShader") {
-			shader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-		}
-
-		this.gl.shaderSource(shader, shaderScript);
-		this.gl.compileShader(shader, shaderScript);
-
-		if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
-			console.log(this.gl.getShaderInfoLog(shader));
-			return null;
-		}
-		return shader;
-	},
-	
-	initShaders: function() {
-		this.shaderProgram = this.gl.createProgram();
-		this.gl.attachShader(this.shaderProgram, this.vertexShader);
-		this.gl.attachShader(this.shaderProgram, this.fragmentShader);
-		this.gl.linkProgram(this.shaderProgram);
-		if (!this.gl.getProgramParameter(this.shaderProgram, this.gl.LINK_STATUS)) {
-			console.log("Could not initialise shaders");
-		}
-		this.gl.useProgram(this.shaderProgram);	
-	},
-	
 	createProjectionMatrix: function() {
 		var projectionMatrix = mat4.create();
 		var nearDist	= 0.01,
@@ -120,13 +66,13 @@ Program.prototype = {
 		}
 		mat4.perspective(projectionMatrix, fovy, aspectRatio, nearDist, farDist);
 		
-		var projectionMatrixUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "projectionMatrix");
-		this.gl.uniformMatrix4fv(projectionMatrixUniformLoc, this.gl.FALSE, projectionMatrix);
+		var projectionMatrixUniformLoc = this.gl.gl().getUniformLocation(this.gl.shaderProgram, "projectionMatrix");
+		this.gl.gl().uniformMatrix4fv(projectionMatrixUniformLoc, this.gl.gl().FALSE, projectionMatrix);
 	},
 	
 	passViewMatrix: function(viewMatrix) {
-		var viewMatrixUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "viewMatrix");
-		this.gl.uniformMatrix4fv(viewMatrixUniformLoc, this.gl.FALSE, viewMatrix);
+		var viewMatrixUniformLoc = this.gl.gl().getUniformLocation(this.gl.shaderProgram, "viewMatrix");
+		this.gl.gl().uniformMatrix4fv(viewMatrixUniformLoc, this.gl.gl().FALSE, viewMatrix);
 	},
 	
 	loadTextures: function() {
@@ -205,8 +151,8 @@ Program.prototype = {
 	},
 	
 	drawScene: function() {	
-		this.gl.viewport(0, 0, this.gl.drawingBufferWidth, this.gl.drawingBufferHeight);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+		this.gl.gl().viewport(0, 0, this.gl.gl().drawingBufferWidth, this.gl.gl().drawingBufferHeight);
+		this.gl.gl().clear(this.gl.gl().COLOR_BUFFER_BIT | this.gl.gl().DEPTH_BUFFER_BIT);
 	
 		var sceneObjects = this.objectsToDraw;
 		
@@ -223,66 +169,66 @@ Program.prototype = {
 		//ambient product
 		var ambientProduct = vec3.multiply(vec3.create(), this.lights[0].lightSource.ambient, sceneObject.reflectionAmbient);
 		ambientProduct = vec4.fromValues(ambientProduct[0], ambientProduct[1], ambientProduct[2], 1.0);
-		var ambientProductUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "ambientProduct");
-		this.gl.uniform4fv(ambientProductUniformLoc, ambientProduct);
+		var ambientProductUniformLoc = this.gl.gl().getUniformLocation(this.gl.shaderProgram, "ambientProduct");
+		this.gl.gl().uniform4fv(ambientProductUniformLoc, ambientProduct);
 
 		//diffuse product
 		var diffuseProduct = vec3.multiply(vec3.create(), this.lights[0].lightSource.diffuse, sceneObject.reflectionDiffuse);
 		diffuseProduct = vec4.fromValues(diffuseProduct[0], diffuseProduct[1], diffuseProduct[2], 1.0);
-		var diffuseProductUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "diffuseProduct");
-		this.gl.uniform4fv(diffuseProductUniformLoc, diffuseProduct);
+		var diffuseProductUniformLoc = this.gl.gl().getUniformLocation(this.gl.shaderProgram, "diffuseProduct");
+		this.gl.gl().uniform4fv(diffuseProductUniformLoc, diffuseProduct);
 
 		//light position
-		var lightPositionUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "lightPosition");
-		this.gl.uniform4fv(lightPositionUniformLoc, this.lights[0].getPosition());
+		var lightPositionUniformLoc = this.gl.gl().getUniformLocation(this.gl.shaderProgram, "lightPosition");
+		this.gl.gl().uniform4fv(lightPositionUniformLoc, this.lights[0].getPosition());
 	},
 	
 	prepareObjectTexture: function(glTexture) {
-		this.gl.bindTexture(this.gl.TEXTURE_2D, glTexture);
-		this.gl.activeTexture(this.gl.TEXTURE0);
-		this.gl.uniform1i(this.shaderProgram.samplerUniform, 0);
+		this.gl.gl().bindTexture(this.gl.gl().TEXTURE_2D, glTexture);
+		this.gl.gl().activeTexture(this.gl.gl().TEXTURE0);
+		this.gl.gl().uniform1i(this.gl.shaderProgram.samplerUniform, 0);
 	},
 	
 	fillBuffers: function(sceneObject) {
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexPositionBuffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, sceneObject.getFloatVertices(), this.gl.STATIC_DRAW);
-		this.vertexPositionBuffer.itemSize = 3;
-		this.vertexPositionBuffer.numItems = sceneObject.getFloatVertices().length/3;
+		this.gl.gl().bindBuffer(this.gl.gl().ARRAY_BUFFER, this.gl.vertexPositionBuffer);
+		this.gl.gl().bufferData(this.gl.gl().ARRAY_BUFFER, sceneObject.getFloatVertices(), this.gl.gl().STATIC_DRAW);
+		this.gl.vertexPositionBuffer.itemSize = 3;
+		this.gl.vertexPositionBuffer.numItems = sceneObject.getFloatVertices().length/3;
 
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexNormalBuffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, sceneObject.getFloatVertexNormals(), this.gl.STATIC_DRAW);
-		this.vertexNormalBuffer.itemSize = 3;
-		this.vertexNormalBuffer.numItems = sceneObject.getFloatVertexNormals().length/3;
+		this.gl.gl().bindBuffer(this.gl.gl().ARRAY_BUFFER, this.gl.vertexNormalBuffer);
+		this.gl.gl().bufferData(this.gl.gl().ARRAY_BUFFER, sceneObject.getFloatVertexNormals(), this.gl.gl().STATIC_DRAW);
+		this.gl.vertexNormalBuffer.itemSize = 3;
+		this.gl.vertexNormalBuffer.numItems = sceneObject.getFloatVertexNormals().length/3;
 
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordBuffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, sceneObject.getFloatTextureCoords(), this.gl.STATIC_DRAW);
-		this.textureCoordBuffer.itemSize = 2;
-		this.textureCoordBuffer.numItems = sceneObject.getFloatTextureCoords().length/2;
+		this.gl.gl().bindBuffer(this.gl.gl().ARRAY_BUFFER, this.gl.textureCoordBuffer);
+		this.gl.gl().bufferData(this.gl.gl().ARRAY_BUFFER, sceneObject.getFloatTextureCoords(), this.gl.gl().STATIC_DRAW);
+		this.gl.textureCoordBuffer.itemSize = 2;
+		this.gl.textureCoordBuffer.numItems = sceneObject.getFloatTextureCoords().length/2;
 
-		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
-		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(sceneObject.getFaces()), this.gl.STATIC_DRAW);
-		this.vertexIndexBuffer.numItems = sceneObject.getFaces().length;
+		this.gl.gl().bindBuffer(this.gl.gl().ELEMENT_ARRAY_BUFFER, this.gl.vertexIndexBuffer);
+		this.gl.gl().bufferData(this.gl.gl().ELEMENT_ARRAY_BUFFER, new Uint16Array(sceneObject.getFaces()), this.gl.gl().STATIC_DRAW);
+		this.gl.vertexIndexBuffer.numItems = sceneObject.getFaces().length;
 	},
 	
 	initialiseAttributes: function() {
-		this.vertexPositionAttributeLocation = this.initialseArrayBuffer(this.vertexPositionBuffer, "position");
-		this.vertexNormalAttributeLocation = this.initialseArrayBuffer(this.vertexNormalBuffer, "normal");
-		this.vertexTextureCoordAttributeLocation = this.initialseArrayBuffer(this.textureCoordBuffer, "texCoord");
-		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
+		this.vertexPositionAttributeLocation = this.initialseArrayBuffer(this.gl.vertexPositionBuffer, "position");
+		this.vertexNormalAttributeLocation = this.initialseArrayBuffer(this.gl.vertexNormalBuffer, "normal");
+		this.vertexTextureCoordAttributeLocation = this.initialseArrayBuffer(this.gl.textureCoordBuffer, "texCoord");
+		this.gl.gl().bindBuffer(this.gl.gl().ELEMENT_ARRAY_BUFFER, this.gl.vertexIndexBuffer);
 	},
 	
 	initialseArrayBuffer: function(buffer, attributeName) {
-		var attributeLocation = this.gl.getAttribLocation(this.shaderProgram, attributeName);
-		this.gl.enableVertexAttribArray(attributeLocation);
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-		this.gl.vertexAttribPointer(attributeLocation, buffer.itemSize, this.gl.FLOAT, false, 0, 0);
+		var attributeLocation = this.gl.gl().getAttribLocation(this.gl.shaderProgram, attributeName);
+		this.gl.gl().enableVertexAttribArray(attributeLocation);
+		this.gl.gl().bindBuffer(this.gl.gl().ARRAY_BUFFER, buffer);
+		this.gl.gl().vertexAttribPointer(attributeLocation, buffer.itemSize, this.gl.gl().FLOAT, false, 0, 0);
 		return attributeLocation;
 	},
 	
 	drawObject: function(modelViewMatrix) {	
-		var modelViewMatrixUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "modelMatrix");
-		this.gl.uniformMatrix4fv(modelViewMatrixUniformLoc, this.gl.FALSE, modelViewMatrix);
-		this.gl.drawElements(this.gl.TRIANGLES, this.vertexIndexBuffer.numItems, this.gl.UNSIGNED_SHORT, 0);
+		var modelViewMatrixUniformLoc = this.gl.gl().getUniformLocation(this.gl.shaderProgram, "modelMatrix");
+		this.gl.gl().uniformMatrix4fv(modelViewMatrixUniformLoc, this.gl.gl().FALSE, modelViewMatrix);
+		this.gl.gl().drawElements(this.gl.gl().TRIANGLES, this.gl.vertexIndexBuffer.numItems, this.gl.gl().UNSIGNED_SHORT, 0);
 	},
 	
 	getElapsedTimeInSeconds: function() {	
