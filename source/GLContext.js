@@ -111,7 +111,6 @@ GLContext.prototype = {
 		this.gl.uniformMatrix4fv(modelMatrixUniformLoc, this.gl.FALSE, modelMatrix);
 		this.gl.drawElements(this.gl.TRIANGLES, this.vertexIndexBuffer.numItems, this.gl.UNSIGNED_SHORT, 0);
 	},
-	
 	prepareObjectTexture: function(glTexture) {
 		this.gl.gl().bindTexture(this.gl.gl().TEXTURE_2D, glTexture);
 		this.gl.gl().activeTexture(this.gl.gl().TEXTURE0);
