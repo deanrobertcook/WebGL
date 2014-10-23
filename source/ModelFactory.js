@@ -1,8 +1,8 @@
-function ModelLoader() {
+function ModelFactory() {
 	this.modelsLocation = "meshes/";
 };
 
-ModelLoader.prototype = {
+ModelFactory.prototype = {
 	loadModel: function(modelFileName, caller, callback) {
 		$.ajax({
 			context: this,
@@ -16,6 +16,7 @@ ModelLoader.prototype = {
 				model.textureCoords = data.meshes[0].texturecoords[0];
 				model.modelMatrix = data.rootnode.transformation;
 				if (data.rootnode.camera) {
+					model.setAsCamera()
 					caller.cameras.push(model);
 				}
 				

@@ -6,6 +6,7 @@ function Model() {
 	this.textureCoords;
 	this.textureImage;
 	
+	this.camera = false;
 	this.lightSource = false;
 	
 	this.modelMatrix = mat4.create();
@@ -17,6 +18,10 @@ function Model() {
 Model.prototype = {
 	setAsLightSource: function() {
 		this.lightSource = new Light();
+	},
+	
+	setAsCamera: function() {
+		this.camera = true;
 	},
 	
 	getFloatVertices: function() {
