@@ -1,53 +1,48 @@
 $("#projectAnchor").click(function() {
-	var program = new Program();
-	program.start();
+	new Program();
 });
 
 function Program () {	
 	this.view = new View();
-	this.gl = null;
+	this.view.constructGUI();
+	
+	this.lastTime = (new Date()).getTime();
+	this.rotation = 0;
+	
+	this.gl = new GLContext(this.view.getCanvas());
+	this.gl.gl().clearColor(0.0, 0.0, 0.0, 1.0);
+	this.gl.gl().enable(this.gl.gl().DEPTH_TEST);
 	
 	this.textureLoader = new TextureLoader();
 	this.modelLoader = new ModelLoader();
+	
+	this.lastMouseXPos = 0;
+	this.lastMouseYPos = 0;
+	this.mouseDown = false;
+	this.eventHandler = new EventHandler(this);
 	
 	this.lights = [];
 	this.cameras = [];
 	this.currentCamera = 0;
 	this.objectsToDraw = [];
 	
+	this.modelsToLoad = [
+		"model49",
+		"model0",
+		"basic-4pyramid", //as second light source
+		"basic-4pyramid", //as first light source
+		"camera-cube", //as camera2
+		"camera-cube", //as camera1
+	];
+	
 	this.keyBuffer = [];
+	
+	this.createProjectionMatrix();
+	
+	this.loadTextures();
 };
 
 Program.prototype = {
-	start: function() {
-		this.view.constructGUI();
-		this.lastTime = (new Date()).getTime();
-		this.rotation = 0;
-		
-		this.gl = new GLContext(this.view.getCanvas());
-		
-		this.gl.gl().clearColor(0.0, 0.0, 0.0, 1.0);
-		this.gl.gl().enable(this.gl.gl().DEPTH_TEST);
-
-		this.lastMouseXPos = 0;
-		this.lastMouseYPos = 0;
-		this.mouseDown = false;
-		this.eventHandler = new EventHandler(this);
-
-		this.createProjectionMatrix();
-
-		this.modelsToLoad = [
-			"model49",
-			"model0",
-			"basic-4pyramid", //as second light source
-			"basic-4pyramid", //as first light source
-			"camera-cube", //as camera2
-			"camera-cube", //as camera1
-		];
-		
-		this.loadTextures();
-	},
-	
 	createProjectionMatrix: function() {
 		var projectionMatrix = mat4.create();
 		var nearDist	= 0.01,
