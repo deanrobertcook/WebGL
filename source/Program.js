@@ -1,13 +1,13 @@
-var htmlAnchorTag = "projectAnchor";
-
-$("#" + htmlAnchorTag).click(function() {
+$("#projectAnchor").click(function() {
 	var program = new Program();
 	program.start();
 });
 
-function Program () {
-	this.canvasHeight = 500;//window.innerHeight;
-	this.canvasWidth = 700; //window.innerWidth;
+function Program () {	
+	this.view = new View();
+	
+	this.vertexShader = new VertexShaderFactory().shader;
+	this.fragmentShader = new FragmentShaderFactory().shader;
 	
 	this.textureLoader = new TextureLoader();
 	this.modelLoader = new ModelLoader();
@@ -27,12 +27,9 @@ function Program () {
 
 Program.prototype = {
 	start: function() {
-		this.windowSetup();
+		this.view.constructGUI();
 		this.lastTime = (new Date()).getTime();
 		this.rotation = 0;
-		
-		this.vertexShader = new VertexShaderFactory().shader;
-		this.fragmentShader = new FragmentShaderFactory().shader;
 
 		this.initgl();
 		this.vertexShader = this.loadShader("vertexShader");
@@ -61,59 +58,9 @@ Program.prototype = {
 		this.loadTextures();
 	},
 	
-	windowSetup: function() {
-		this.appArea = $("<div id='CITS3200Project'></div>");
-		this.canvasSetup();
-		this.menuSetup();
-		this.appArea = this.appArea.get(0);
-		$("#" + htmlAnchorTag).after(this.appArea);
-	},
-	
-	canvasSetup: function() {
-		this.canvas = $("<canvas id='projectCanvas'><canvas>");
-		$(this.canvas).attr({width: this.canvasWidth, height: this.canvasHeight});
-		$(this.canvas).css({
-			border: "1px solid black",
-			resize: "both",
-			display: "block",
-			float: "left",
-		});
-		this.canvas = this.canvas.get(0);
-		this.appArea.append(this.canvas);
-	},
-	
-	menuSetup: function() {
-		this.menu = $("<nav id='projectMenu'></nav>");
-		this.menu.css({
-			height: this.canvasHeight + "px",
-			width: "150px",
-			border: "1px solid black",
-			"border-left": 0,
-			display: "inline",
-			float: "left",
-		});
-		
-		
-		var lightCamToggle = $("<button> Light/Cam Toggle</button>");
-		
-		var handleButtonClick = function() {
-		if(this.modelInFocus === this.cameras[this.currentCamera]) {
-				this.modelInFocus = this.lights[0];
-			} else if(this.modelInFocus === this.lights[0]) {
-				this.modelInFocus = this.cameras[this.currentCamera];
-			}
-		};
-		
-		lightCamToggle.click(handleButtonClick.bind(this)	);
-		
-		this.menu.append(lightCamToggle);
-		this.menu = this.menu.get(0);
-		this.appArea.append(this.menu);
-	},
-	
 	initgl: function() {
 		try {
-			this.gl = this.canvas.getContext("experimental-webgl");
+			this.gl = this.view.getCanvas().getContext("experimental-webgl");
 		} catch (e) {
 			console.log("Couldn't initialise GL context" + e.message);
 		}
@@ -160,11 +107,11 @@ Program.prototype = {
 		var nearDist	= 0.01,
 			farDist		= 100,
 			fovy,
-			aspectRatio	= this.canvas.clientWidth/this.canvas.clientHeight,
+			aspectRatio	= this.view.getCanvas().clientWidth/this.view.getCanvas().clientHeight,
 			clipHeight	= 2 * nearDist,
 			zScale = 0.002;
 	
-		if (this.canvas.clientWidth <= this.canvas.clientHeight) {
+		if (this.view.getCanvas().clientWidth <= this.view.getCanvas().clientHeight) {
 			//including the aspect ratio here locks the width in place and forces the height to change
 			fovy = 2 * Math.atan(clipHeight/(2 * nearDist * aspectRatio)); 
 		} else {
