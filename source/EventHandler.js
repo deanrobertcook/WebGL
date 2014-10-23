@@ -56,6 +56,7 @@ EventHandler.prototype = {
 			}
 		}
 
+		this.modelInFocus = this.sceneBuilder.cameras[0];
 
 		if(this.keyBuffer[67]) { //c
 			var numCameras = this.cameras.length;
