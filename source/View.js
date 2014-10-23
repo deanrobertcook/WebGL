@@ -6,15 +6,34 @@ function View(program) {
 	this.canvas = this.produceCanvasHTML();
 	
 	this.menu = this.produceMenuHTML();
+	
+	this.statusBar = this.produceStatusBarHTML();
 };
 
 View.prototype = {
 	assembleGUI: function() {
 		var appArea = $("<div id='CITS3200Project'></div>");
+		appArea.append(this.statusBar);
 		appArea.append(this.canvas);
 		appArea.append(this.menu);
 		appArea = appArea.get(0);
 		$("#" + this.htmlAnchorID).after(appArea);
+	},
+	
+	produceStatusBarHTML: function() {
+		var statusBar = $("<div id='statusBar'>"+
+				"<span id='refreshRateDisplay'></span>" +
+				+"</div>");
+		statusBar.css({
+			border: "1px solid black",
+			resize: "both",
+		});
+		statusBar = statusBar.get(0);
+		return statusBar;
+	},
+	
+	updateRefreshRateDisplay: function(refreshRate) {
+		$("#refreshRateDisplay").html("Refresh Rate: " + refreshRate);
 	},
 	
 	produceCanvasHTML: function() {
@@ -27,7 +46,6 @@ View.prototype = {
 			float: "left",
 		});
 		canvas = canvas.get(0);
-		this.canvas = canvas;
 		return canvas;
 	},
 	
@@ -43,7 +61,6 @@ View.prototype = {
 		});
 		
 		menu = menu.get(0);
-		this.menu = menu;
 		return menu;
 	},
 	

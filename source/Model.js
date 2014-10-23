@@ -20,8 +20,16 @@ Model.prototype = {
 		this.lightSource = new Light();
 	},
 	
+	isLightSource: function() {
+		return this.lightSource;
+	},
+	
 	setAsCamera: function() {
 		this.camera = true;
+	},
+	
+	isCamera: function() {
+		return this.camera;
 	},
 	
 	getFloatVertices: function() {

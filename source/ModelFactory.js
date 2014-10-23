@@ -3,7 +3,7 @@ function ModelFactory() {
 };
 
 ModelFactory.prototype = {
-	loadModel: function(modelFileName, caller, callback) {
+	loadModel: function(modelFileName, callback) {
 		$.ajax({
 			context: this,
 			url: this.modelsLocation + modelFileName + ".json",
@@ -17,16 +17,10 @@ ModelFactory.prototype = {
 				model.modelMatrix = data.rootnode.transformation;
 				if (data.rootnode.camera) {
 					model.setAsCamera()
-					caller.cameras.push(model);
-				}
-				
-				if (data.rootnode.light) {
+				} if (data.rootnode.light) {
 					model.setAsLightSource();
-					caller.lights.push(model);
 				}
-				caller.loadModels();
 				callback(model);
-				return model;
 			}
 		});
 	},
