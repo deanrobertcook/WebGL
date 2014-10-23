@@ -1,16 +1,18 @@
 function View(program) {
 	this.htmlAnchorID = "projectAnchor";
-	this.canvas = null;
+	
 	this.canvasHeight = 500;//window.innerHeight;
 	this.canvasWidth = 700; //window.innerWidth;
-	this.program = program;
+	this.canvas = this.produceCanvasHTML();
+	
+	this.menu = this.produceMenuHTML();
 };
 
 View.prototype = {
-	constructGUI: function() {
+	assembleGUI: function() {
 		var appArea = $("<div id='CITS3200Project'></div>");
-		appArea.append(this.produceCanvasHTML());
-		appArea.append(this.produceMenuHTML());
+		appArea.append(this.canvas);
+		appArea.append(this.menu);
 		appArea = appArea.get(0);
 		$("#" + this.htmlAnchorID).after(appArea);
 	},
@@ -40,32 +42,15 @@ View.prototype = {
 			float: "left",
 		});
 		
-		
-		var lightCamToggle = $("<button> Light/Cam Toggle</button>");
-		
-		var handleButtonClick = function() {
-		if(this.modelInFocus === this.cameras[this.currentCamera]) {
-				this.modelInFocus = this.lights[0];
-			} else if(this.modelInFocus === this.lights[0]) {
-				this.modelInFocus = this.cameras[this.currentCamera];
-			}
-		};
-		
-		lightCamToggle.click(handleButtonClick.bind(this));
-		
-		var addObjectButton = $("<button>Add Object</button>");
-		
-		var handleAddObjectButtonClick = function() {
-			var newMesh = prompt("Enter an object mesh file name: ");
-			this.program.modelsToLoad.push(newMesh);
-		};
-		
-		addObjectButton.click(handleAddObjectButtonClick.bind(this));
-		
-		menu.append(lightCamToggle);
-		menu.append(addObjectButton);
 		menu = menu.get(0);
+		this.menu = menu;
 		return menu;
+	},
+	
+	produceMenuButton: function(label, handler) {
+		var button = $("<button>"+label+"</button>");
+		button.click(handler);
+		$(this.menu).append(button);
 	},
 	
 	getCanvas: function() {

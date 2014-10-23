@@ -6,13 +6,13 @@ function Controller () {
 	this.lastTime = (new Date()).getTime();
 	
 	this.view = new View(this);
-	this.view.constructGUI();
+	this.view.produceMenuButton("Light/Cam Toggle", this.handleToggleClick.bind(this));
+	this.view.produceMenuButton("Add Object", this.handleAddObjectButtonClick.bind(this));
+	this.view.assembleGUI();
 	
 	this.gl = new GLContext(this.view.getCanvas());
 
 	this.sceneBuilder = new SceneBuilder();
-
-
 	this.eventHandler = new EventHandler(this);
 	
 	this.keyBuffer = [];
@@ -21,7 +21,20 @@ function Controller () {
 	this.mainLoop();
 };
 
-Controller.prototype = {	
+Controller.prototype = {
+	handleToggleClick: function() {
+		if(this.modelInFocus === this.cameras[this.currentCamera]) {
+			this.modelInFocus = this.lights[0];
+		} else if(this.modelInFocus === this.lights[0]) {
+			this.modelInFocus = this.cameras[this.currentCamera];
+		}
+	},
+	
+	handleAddObjectButtonClick: function() {
+		var newMesh = prompt("Enter an object mesh file name: ");
+		this.program.modelsToLoad.push(newMesh);
+	},
+	
 	mainLoop: function() {
 		window.requestAnimationFrame(this.mainLoop.bind(this));
 
