@@ -9,52 +9,6 @@ function Program () {
 	this.canvasHeight = 500;//window.innerHeight;
 	this.canvasWidth = 700; //window.innerWidth;
 	
-	this.vertexShader = 
-		"attribute vec3 position;" +
-		"attribute vec3 normal;" +
-		"attribute vec2 texCoord;" +
-		
-		"uniform vec4 lightPosition;" +
-		"uniform mat4 modelMatrix;" +
-		"uniform mat4 viewMatrix;" +
-		"uniform mat4 projectionMatrix;" +
-		
-		"varying vec3 n;" +
-		"varying vec3 l;" +
-		"varying vec2 vTexCoord;" +
-		
-		"void main() {" +
-			"vTexCoord = texCoord;"+
-			"mat4 modelView = viewMatrix * modelMatrix;" +
-			
-			"vec4 normalCamCoords = modelView * vec4(normal, 0.0);" +
-			"vec4 positionCamCoords = modelView * vec4(position, 1.0);" +
-			"vec4 lightPositionCamCoords = viewMatrix * lightPosition;" +
-			
-			"n = normalize(normalCamCoords.xyz);" +
-			"l = normalize(lightPositionCamCoords.xyz - positionCamCoords.xyz);" +
-			
-			"gl_PointSize = 2.0;" +
-			"gl_Position = projectionMatrix * positionCamCoords;" +
-		"}";
-	this.fragmentShader = 
-		"precision mediump float;" +
-		
-		"uniform vec4 ambientProduct;" +
-		"uniform vec4 diffuseProduct;" +
-		"uniform sampler2D texture;" +
-		
-		"varying vec3 n;" +
-		"varying vec3 l;" +
-		"varying vec2 vTexCoord;" +
-		
-		"void main() {" +
-			"vec4 ambient = ambientProduct;" +
-			"vec4 diffuse = max(dot(l, n), 0.0) * diffuseProduct;" +
-			"vec4 color = ambient + diffuse;" +
-			"gl_FragColor = color * texture2D(texture, vTexCoord * 2.0);" +
-		"}";
-	
 	this.textureLoader = new TextureLoader();
 	this.modelLoader = new ModelLoader();
 	
@@ -76,6 +30,9 @@ Program.prototype = {
 		this.windowSetup();
 		this.lastTime = (new Date()).getTime();
 		this.rotation = 0;
+		
+		this.vertexShader = new VertexShaderFactory().shader;
+		this.fragmentShader = new FragmentShaderFactory().shader;
 
 		this.initgl();
 		this.vertexShader = this.loadShader("vertexShader");
@@ -215,10 +172,6 @@ Program.prototype = {
 			fovy = 2 * Math.atan(clipHeight/(2 * nearDist)); 
 		}
 		mat4.perspective(projectionMatrix, fovy, aspectRatio, nearDist, farDist);
-		
-//		mat4.translate(projectionMatrix, projectionMatrix, [0, 0, -1.0]);
-//		mat4.scale(projectionMatrix, projectionMatrix, [1.0, 1.0, zScale]);
-//		mat4.translate(projectionMatrix, projectionMatrix, [0, 0, 1.0]);
 		
 		var projectionMatrixUniformLoc = this.gl.getUniformLocation(this.shaderProgram, "projectionMatrix");
 		this.gl.uniformMatrix4fv(projectionMatrixUniformLoc, this.gl.FALSE, projectionMatrix);
