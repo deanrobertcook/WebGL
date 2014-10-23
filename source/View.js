@@ -1,8 +1,9 @@
-function View() {
+function View(program) {
 	this.htmlAnchorID = "projectAnchor";
 	this.canvas = null;
 	this.canvasHeight = 500;//window.innerHeight;
 	this.canvasWidth = 700; //window.innerWidth;
+	this.program = program;
 };
 
 View.prototype = {
@@ -50,9 +51,19 @@ View.prototype = {
 			}
 		};
 		
-		lightCamToggle.click(handleButtonClick.bind(this)	);
+		lightCamToggle.click(handleButtonClick.bind(this));
+		
+		var addObjectButton = $("<button>Add Object</button>");
+		
+		var handleAddObjectButtonClick = function() {
+			var newMesh = prompt("Enter an object mesh file name: ");
+			this.program.modelsToLoad.push(newMesh);
+		};
+		
+		addObjectButton.click(handleAddObjectButtonClick.bind(this));
 		
 		menu.append(lightCamToggle);
+		menu.append(addObjectButton);
 		menu = menu.get(0);
 		return menu;
 	},

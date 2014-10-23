@@ -3,7 +3,7 @@ $("#projectAnchor").click(function() {
 });
 
 function Program () {	
-	this.view = new View();
+	this.view = new View(this);
 	this.view.constructGUI();
 	
 	this.lastTime = (new Date()).getTime();
@@ -24,16 +24,15 @@ function Program () {
 	this.lights = [];
 	this.cameras = [];
 	this.currentCamera = 0;
-	this.objectsToDraw = [];
 	
 	this.modelsToLoad = [
-		"model49",
-		"model0",
-		"basic-4pyramid", //as second light source
-		"basic-4pyramid", //as first light source
-		"camera-cube", //as camera2
-		"camera-cube", //as camera1
+		"basic-cube-forward",
+		"basic-cube-back",
+		"camera-cube-left", 
+		"camera-cube-right", 
+		"basic-4pyramid-light", 
 	];
+	this.modelsLoaded = [];
 	
 	this.keyBuffer = [];
 	
@@ -46,7 +45,7 @@ Program.prototype = {
 	createProjectionMatrix: function() {
 		var projectionMatrix = mat4.create();
 		var nearDist	= 0.01,
-			farDist		= 100,
+			farDist		= 500,
 			fovy,
 			aspectRatio	= this.view.getCanvas().clientWidth/this.view.getCanvas().clientHeight,
 			clipHeight	= 2 * nearDist,
@@ -75,64 +74,24 @@ Program.prototype = {
 			var textureFileName = this.textureLoader.texturesToLoad.pop();
 			this.textureLoader.loadTextureAsWebGLTexture(textureFileName, this);
 		} else {
-			this.loadModels();
+			this.mainLoop();
 		}
+	},
+	
+	handleModel: function(model) {
+		this.modelsLoaded.push(model);
 	},
 	
 	loadModels: function() {
 		if (this.modelsToLoad.length > 0) {
 			var model = this.modelsToLoad.pop();
-			this.modelLoader.loadModel(model, this);
-		} else {
-			this.setUpModels();
+			this.modelLoader.loadModel(model, this, this.handleModel.bind(this));
 		}
-	},
-	
-	setUpModels: function() {
-		var sceneObjects = this.modelLoader.getModels();
-	
-		//camera 1
-		sceneObjects[0].translate(0, 0, 8);
-		this.cameras.push(sceneObjects[0]);
-		this.objectsToDraw.push(sceneObjects[0]);
-		
-		//camera 2
-		sceneObjects[1].translate(0, 0, -8);
-		sceneObjects[1].rotateY(180);
-		this.cameras.push(sceneObjects[1]);
-		this.objectsToDraw.push(sceneObjects[1]);
-		
-		this.modelInFocus = this.cameras[this.currentCamera];
-		
-		//light source 1
-		sceneObjects[2].setAsLightSource();
-		sceneObjects[2].scale(0.5, 0.5, 0.5);
-		sceneObjects[2].translate(5, 0, 0);
-		this.lights.push(sceneObjects[2]);
-		this.objectsToDraw.push(sceneObjects[2]);
-		
-		//light source 2
-		sceneObjects[3].setAsLightSource();
-		sceneObjects[3].scale(0.5, 0.5, 0.5);
-		sceneObjects[3].translate(-5, 0, 0);
-		this.lights.push(sceneObjects[3]);
-		this.objectsToDraw.push(sceneObjects[3]);
-		
-		//floor
-		sceneObjects[4].translate(0, -1.01, 0);
-		sceneObjects[4].scale(10, 10, 10);
-		sceneObjects[4].rotateX(90);
-		this.objectsToDraw.push(sceneObjects[4]);
-		
-		//object1
-		sceneObjects[5].scale(0.1, 0.1, 0.1);
-		this.objectsToDraw.push(sceneObjects[5]);
-		
-		this.mainLoop();
 	},
 	
 	mainLoop: function() {
 		window.requestAnimationFrame(this.mainLoop.bind(this));
+		this.loadModels();
 		this.passViewMatrix(this.cameras[this.currentCamera].getViewMatrix());
 		this.drawScene();
 
@@ -149,9 +108,9 @@ Program.prototype = {
 		this.gl.gl().viewport(0, 0, this.gl.gl().drawingBufferWidth, this.gl.gl().drawingBufferHeight);
 		this.gl.gl().clear(this.gl.gl().COLOR_BUFFER_BIT | this.gl.gl().DEPTH_BUFFER_BIT);
 	
-		var sceneObjects = this.objectsToDraw;
+		var sceneObjects = this.modelsLoaded;
 		
-		for (var i = 0, l = this.objectsToDraw.length; i < l; i++) {
+		for (var i = 0, l = this.modelsLoaded.length; i < l; i++) {
 			this.establishLightingModel(sceneObjects[i]);
 			this.prepareObjectTexture(this.textureLoader.getGLTexture(0));
 			this.fillBuffers(sceneObjects[i]);

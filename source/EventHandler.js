@@ -43,7 +43,7 @@ EventHandler.prototype = {
 	},
 
 	handleKeyPress: function(event, model) {
-		console.log(event);
+		//console.log(event);
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -52,7 +52,7 @@ EventHandler.prototype = {
 		//keyLogger
 		for (var i = 0, l = this.keyBuffer.length; i < l; i++) {
 			if(this.keyBuffer[i]) {
-				console.log(i);
+				//console.log(i);
 			}
 		}
 
