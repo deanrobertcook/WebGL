@@ -10,7 +10,9 @@ function SceneBuilder() {
 	];
 	this.modelsLoaded = [];
 	
+	
 	this.modelFactory = new ModelFactory();
+	this.textureLoader = new TextureLoader();
 }
 
 SceneBuilder.prototype = {
@@ -26,13 +28,22 @@ SceneBuilder.prototype = {
 		glContext.passProjectionMatrix(projectionMatrix);
 		
 		var sceneModels = this.modelsLoaded;
-		
 		for (var i = 0, l = sceneModels.length; i < l; i++) {
+			var model = sceneModels[i];
 			glContext.passLightUniforms(
-					this.createLightUniforms(sceneModels[0]));
-			glContext.fillBuffers(sceneModels[i]);
+					this.createLightUniforms(model));
+			if (model.textureIsLoaded()) {
+				if (model.hasWebGLTexture()) {
+					glContext.passTexture(model.texture);
+				} else {
+					glContext.assignGLTexture(model.texture);
+				}
+			} else {
+				this.textureLoader.loadTextureFor(model);
+			}
+			glContext.fillBuffers(model);
 			glContext.initialiseAttributes();
-			glContext.drawObject(sceneModels[i].getModelMatrix());
+			glContext.drawObject(model.getModelMatrix());
 		}
 	},
 	
@@ -65,16 +76,7 @@ SceneBuilder.prototype = {
 		var nearDist	= 0.01,
 			farDist		= 500,
 			fovy = 45,
-			aspectRatio	= canvas.clientWidth/canvas.clientHeight,
-			clipHeight	= 2 * nearDist;
-	
-//		if (canvas.clientWidth <= canvas.clientHeight) {
-//			//including the aspect ratio here locks the width in place and forces the height to change
-//			fovy = 2 * Math.atan(clipHeight/(2 * nearDist * aspectRatio)); 
-//		} else {
-//			//or else the width changes with a fixed height
-//			fovy = 2 * Math.atan(clipHeight/(2 * nearDist)); 
-//		}
+			aspectRatio	= canvas.clientWidth/canvas.clientHeight;
 		mat4.perspective(projectionMatrix, fovy, aspectRatio, nearDist, farDist);
 		return projectionMatrix;
 	},

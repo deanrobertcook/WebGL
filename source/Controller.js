@@ -19,6 +19,12 @@ function Controller () {
 	this.keyBuffer = [];
 	
 	this.frame = 0;
+	
+	//debug
+	this.loopLimit = 50;
+	this.loops = 0;
+	this.limitLoops = false;
+	
 	this.mainLoop();
 };
 
@@ -42,7 +48,9 @@ Controller.prototype = {
 	},
 	
 	mainLoop: function() {
-		window.requestAnimationFrame(this.mainLoop.bind(this));
+		if ((this.loops < this.loopLimit) || !this.limitLoops) {
+			window.requestAnimationFrame(this.mainLoop.bind(this));
+		}
 
 		this.sceneBuilder.loadModels();
 		this.sceneBuilder.drawScene(this.gl, this.view.getCanvas());
@@ -54,6 +62,7 @@ Controller.prototype = {
 			this.frame = 0;
 		}
 		this.frame++;
+		this.loops++;
 	},
 	
 	getElapsedTimeInSeconds: function() {	

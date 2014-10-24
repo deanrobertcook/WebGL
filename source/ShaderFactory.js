@@ -2,7 +2,7 @@ function ShaderFactory() {
 	this.vertexShader = [
 		'attribute vec3 position;',
 		'attribute vec3 normal;',
-		//'attribute vec2 texCoord;',
+		'attribute vec2 texCoord;',
 		
 		'uniform vec4 lightPosition;',
 		'uniform mat4 modelMatrix;',
@@ -11,10 +11,10 @@ function ShaderFactory() {
 		
 		'varying vec3 n;',
 		'varying vec3 l;',
-		//'varying vec2 vTexCoord;',
+		'varying vec2 vTexCoord;',
 		
 		'void main() {',
-			//'vTexCoord = texCoord;',
+			'vTexCoord = texCoord;',
 			'mat4 modelView = viewMatrix * modelMatrix;',
 			
 			'vec4 normalCamCoords = modelView * vec4(normal, 0.0);',
@@ -34,17 +34,17 @@ function ShaderFactory() {
 		
 		'uniform vec4 ambientProduct;',
 		'uniform vec4 diffuseProduct;',
-		//'uniform sampler2D texture;',
+		'uniform sampler2D texture;',
 		
 		'varying vec3 n;',
 		'varying vec3 l;',
-		//'varying vec2 vTexCoord;',
+		'varying vec2 vTexCoord;',
 		
 		'void main() {',
 			'vec4 ambient = ambientProduct;',
 			'vec4 diffuse = max(dot(l, n), 0.0) * diffuseProduct;',
 			'vec4 color = ambient + diffuse;',
-			'gl_FragColor = color;',// * texture2D(texture, vTexCoord * 2.0);',
+			'gl_FragColor = color * texture2D(texture, vTexCoord * 2.0);',
 		'}'
 	].join("\n");
 };

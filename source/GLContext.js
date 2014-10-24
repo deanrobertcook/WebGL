@@ -42,7 +42,7 @@ GLContext.prototype = {
 		this.gl.useProgram(this.shaderProgram);	
 	},
 	
-	gl: function() {
+	getContext: function() {
 		if (this.gl) {
 			return this.gl;
 		}
@@ -81,10 +81,10 @@ GLContext.prototype = {
 		this.vertexNormalBuffer.itemSize = 3;
 		this.vertexNormalBuffer.numItems = model.getFloatVertexNormals().length/3;
 
-//		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordBuffer);
-//		this.gl.bufferData(this.gl.ARRAY_BUFFER, model.getFloatTextureCoords(), this.gl.STATIC_DRAW);
-//		this.textureCoordBuffer.itemSize = 2;
-//		this.textureCoordBuffer.numItems = model.getFloatTextureCoords().length/2;
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, model.getFloatTextureCoords(), this.gl.STATIC_DRAW);
+		this.textureCoordBuffer.itemSize = 2;
+		this.textureCoordBuffer.numItems = model.getFloatTextureCoords().length/2;
 
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
 		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(model.getFaces()), this.gl.STATIC_DRAW);
@@ -94,7 +94,7 @@ GLContext.prototype = {
 	initialiseAttributes: function() {
 		this.vertexPositionAttributeLocation = this.initialseArrayBuffer(this.vertexPositionBuffer, "position");
 		this.vertexNormalAttributeLocation = this.initialseArrayBuffer(this.vertexNormalBuffer, "normal");
-		//this.vertexTextureCoordAttributeLocation = this.initialseArrayBuffer(this.textureCoordBuffer, "texCoord");
+		this.vertexTextureCoordAttributeLocation = this.initialseArrayBuffer(this.textureCoordBuffer, "texCoord");
 		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.vertexIndexBuffer);
 	},
 	
@@ -111,9 +111,22 @@ GLContext.prototype = {
 		this.gl.uniformMatrix4fv(modelMatrixUniformLoc, this.gl.FALSE, modelMatrix);
 		this.gl.drawElements(this.gl.TRIANGLES, this.vertexIndexBuffer.numItems, this.gl.UNSIGNED_SHORT, 0);
 	},
-	prepareObjectTexture: function(glTexture) {
-		this.gl.gl().bindTexture(this.gl.gl().TEXTURE_2D, glTexture);
-		this.gl.gl().activeTexture(this.gl.gl().TEXTURE0);
-		this.gl.gl().uniform1i(this.gl.shaderProgram.samplerUniform, 0);
+	
+	assignGLTexture: function(texture) {
+		var glTexture = this.gl.createTexture();
+		this.gl.bindTexture(this.gl.TEXTURE_2D, glTexture);
+		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, texture.image);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+		texture.webGLTexture = glTexture;
+		
+	},
+	
+	passTexture: function(texture) {
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture.webGLTexture);
+		this.gl.activeTexture(this.gl.TEXTURE0);
+		this.gl.uniform1i(this.shaderProgram.samplerUniform, 0);
 	},
 };

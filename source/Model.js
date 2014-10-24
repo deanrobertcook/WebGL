@@ -6,6 +6,8 @@ function Model() {
 	this.textureCoords;
 	this.textureImage;
 	
+	this.texture;
+	
 	this.camera = false;
 	this.lightSource = false;
 	
@@ -30,6 +32,30 @@ Model.prototype = {
 	
 	isCamera: function() {
 		return this.camera;
+	},
+	
+	setNewTexture: function(fileName) {
+		this.texture = new Texture(fileName);
+	},
+	
+	getTextureName: function() {
+		return this.texture.fileName;
+	},
+	
+	textureIsLoaded: function() {
+		if (this.texture.image) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	
+	hasWebGLTexture: function() {
+			if (this.texture.webGLTexture) {
+			return true;
+		} else {
+			return false;
+		}
 	},
 	
 	getFloatVertices: function() {

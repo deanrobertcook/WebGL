@@ -15,6 +15,7 @@ ModelFactory.prototype = {
 				model.faces = this.concatenateFaceArrays(data.meshes[0].faces);
 				model.textureCoords = data.meshes[0].texturecoords[0];
 				model.modelMatrix = data.rootnode.transformation;
+				model.setNewTexture(this.randomTexture());
 				if (data.rootnode.camera) {
 					model.setAsCamera()
 				} if (data.rootnode.light) {
@@ -23,6 +24,11 @@ ModelFactory.prototype = {
 				callback(model);
 			}
 		});
+	},
+	
+	randomTexture: function() {
+		var index = Math.floor((Math.random() * 29) + 2);
+		return "texture" + index;
 	},
 	
 	concatenateFaceArrays: function(faceArrays) {
@@ -34,9 +40,5 @@ ModelFactory.prototype = {
 		}
 		return joinedList;
 	},
-
-	getModels: function() {
-		return this.models;
-	}
 };
 

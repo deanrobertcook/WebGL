@@ -1,32 +1,44 @@
 function TextureLoader() {
 	this.texturesLocation = "textures/";
-	this.texturesToLoad = [
-			"texture25",
-		];
-	this.glTextures = [];
+	this.texturesLoaded = [];
 };
 
 TextureLoader.prototype = {
-	loadTextureAsWebGLTexture: function(textureFileName, callingProgram) {
-		var glContext = callingProgram.gl.gl();
-		var textureImage = new Image();
-		var handleTexture = function() {
-			var glTexture = glContext.createTexture();
-			glContext.bindTexture(glContext.TEXTURE_2D, glTexture);
-			glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, true);
-			glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, textureImage);
-			glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
-			glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
-			glContext.bindTexture(glContext.TEXTURE_2D, null);
-			this.glTextures.push(glTexture);
-			callingProgram.loadTextures();
-		};
-		textureImage.onload = handleTexture.bind(this);
-		textureImage.src = this.texturesLocation + textureFileName + ".bmp";
+	loadTextureFor: function(model) {
+		var texture = this.findTexture(model.texture.fileName);
+		if (texture) {
+			model.texture = texture;
+		} else {
+			var textureImage = new Image();
+			var handleTexture = function() {
+				texture = new Texture();
+				texture.fileName = model.texture.fileName;
+				texture.image = textureImage;
+				this.texturesLoaded.push(texture);
+				model.texture = texture;
+			}
+			textureImage.onload = handleTexture.bind(this);
+			textureImage.src = this.texturesLocation + model.texture.fileName + ".bmp";
+		}
 	},
-
-	getGLTexture: function(index) {
-		return this.glTextures[index];
-	}
+	
+	findTexture: function(textureFileName) {
+		var texturesLoaded = this.texturesLoaded;
+		for (var i = 0, l = texturesLoaded.length; i < l; i++) {
+			if (textureFileName === texturesLoaded[i].fileName) {
+				return texturesLoaded[i];
+			}
+		}
+		return false;
+	},
 };
 
+function Texture(fileName) {
+	this.fileName = fileName;
+	this.image;
+	this.webGLTexture;
+};
+
+Texture.prototype = {
+
+};
