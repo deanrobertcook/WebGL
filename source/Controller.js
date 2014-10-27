@@ -44,7 +44,6 @@ var Controller = (function() {
 		testButtonFunction: function() {
 			console.log(private.sceneBuilder.getScene(private.view.getCanvas()));
 		},
-		
 		receiveUserCommand: function(command) {
 			console.log(command);
 		},
