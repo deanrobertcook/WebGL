@@ -1,17 +1,19 @@
-function InputHandler (commandReceiver) {
+function InputHandler (commandReceiver, canvas) {
 	this._ = {
 		commandReceiver: null,
 		keyBuffer: [],
-		logKeyBufferToConsole: function() {
-			for (var i = 0, l = this._.keyBuffer.length; i < l; i++) {
-				if(this._.keyBuffer[i]) {
-					console.log(i);
-				}
-			}
-		}
+		mouseData: {
+			button: null,
+			x: 0,
+			y: 0,
+		},
 	};
 	this._.commandReceiver = commandReceiver;
 	document.onkeydown = document.onkeyup = this.handleKeyPress.bind(this);
+	canvas.oncontextmenu = this.disableRightClick.bind(this);
+	$(canvas).on("mousedown", this.handleMouseDown.bind(this));
+	$(canvas).on("mouseup", this.handleMouseUp.bind(this));
+	$(canvas).on("mousemove", this.handleMouseMove.bind(this));
 };
 
 InputHandler.prototype = {
@@ -22,6 +24,9 @@ InputHandler.prototype = {
 
 		this._.keyBuffer[event.keyCode] = event.type == "keydown";
 
+		//Think of using a "key state object" that the controller checks,
+		//rather than calling a bajillion functions
+		
 		if(this._.keyBuffer[67]) { //c
 			this._.commandReceiver.keyC();
 		} if(this._.keyBuffer[65]) { //a
@@ -59,31 +64,42 @@ InputHandler.prototype = {
 
 
 	handleMouseDown:  function(event) {
-		this.mouseDown = event.button;
-		this.lastMouseXPos = event.clientX;
-		this.lastMouseYPos = event.clientY;
+		event.stopPropagation();
+		event.preventDefault();
+		this._.mouseData.button = event.button;
+		this._.commandReceiver.mouseDown(this._.mouseData);
+	},
+	
+	disableRightClick: function() {
+		return false;
 	},
 
 	handleMouseUp: function(event) {
-		this.mouseDown = -1;
+		event.stopPropagation();
+		event.preventDefault();
+		this._.mouseData.button = -1;
+		this._.commandReceiver.mouseUp(this._.mouseData);
 	},
 
 	handleMouseMove: function(event) {
 		var	winXPos = event.clientX,
-				winYPos = event.clientY,
-				xPosDelta = winXPos - this.lastMouseXPos,
-				yPosDelta = winYPos - this.lastMouseYPos;
+			winYPos = event.clientY;
+			
+		var bottomLeftCoords = this.calculateBottomLeftCoords(winXPos, winYPos, event.toElement);
 
-		if (this.mouseDown === 1) {
-			this.camera1.rotateX(yPosDelta/2);
-		} else if (this.mouseDown === 0) {
-			this.camera1.translate(0, 0, -yPosDelta/10);
-			this.camera1.rotateY(xPosDelta/2);
-		}
-
-		this.passViewMatrix(this.camera1.getViewMatrix());
-		this.lastMouseXPos = winXPos;
-		this.lastMouseYPos = winYPos;
+		this._.mouseData.x = bottomLeftCoords.x;
+		this._.mouseData.y = bottomLeftCoords.y;
+	},
+	
+	calculateBottomLeftCoords: function(mouseXPosWindow, mouseYPosWindow, element) {
+		var elementXPos = $(element).position().left;
+		var elementYPos = $(element).position().top;
+		
+		var bottomLeftXPos = mouseXPosWindow - elementXPos;
+		var topLeftYPos = mouseYPosWindow - elementYPos;
+		var bottomLeftYPos = element.height - topLeftYPos;
+		
+		return {x: bottomLeftXPos, y: bottomLeftYPos};
 	},
 
 	handleMouseWheel: function(event) {
@@ -97,5 +113,11 @@ InputHandler.prototype = {
 		this.passViewMatrix(this.camera1.getViewMatrix());
 	},
 
-
+	logKeyBufferToConsole: function() {
+		for (var i = 0, l = this._.keyBuffer.length; i < l; i++) {
+			if(this._.keyBuffer[i]) {
+				console.log(i);
+			}
+		}
+	},
 };

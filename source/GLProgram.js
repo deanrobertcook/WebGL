@@ -26,10 +26,13 @@ function GLProgram(canvas) {
 
 	this._.gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	this._.gl.enable(this._.gl.DEPTH_TEST);
+	this._.gl.enable(this._.gl.STENCIL_TEST);
 };
 
 GLProgram.prototype = {
-	drawScene: function(scene) {	
+	drawScene: function(scene, pickMode) {
+		pickMode = !! pickMode;
+		
 		this.clearViewport();
 
 		this.passViewMatrix(scene.viewMatrix);
@@ -37,8 +40,10 @@ GLProgram.prototype = {
 
 		var sceneModels = scene.sceneModels;
 		for (var i = 0, l = sceneModels.length; i < l; i++) {
+			var shaderObjectIndex = pickMode ? i : -1;
+			
 			var model = sceneModels[i];
-			this.passLightUniforms(model.lightUniforms);
+			this.passLightUniforms(model.lightUniforms, shaderObjectIndex);
 
 			if (model.hasWebGLTexture()) {
 				this.passTexture(model.texture);
@@ -51,10 +56,27 @@ GLProgram.prototype = {
 			this.drawObject(model.getModelMatrix());
 		}
 	},
+	
+	modelAt: function(x, y, scene) {		
+		var color = new Uint8Array(4);
+		this.drawScene(scene, true);
+		this._.gl.readPixels(x, y, 1, 1, this._.gl.RGBA, this._.gl.UNSIGNED_BYTE, color);
+		this.drawScene(scene, false);
+		if (color[0] === 0) {
+			var selectedIndex = -1;
+		} else {
+			var selectedIndex = color[2];
+		}
+		return selectedIndex;
+	},
 
 	initGL: function(canvas) {
 		try {
-			this._.gl = canvas.getContext("experimental-webgl");
+			this._.gl = canvas.getContext("experimental-webgl", 
+					{
+						preserveDrawingBuffer: true,
+						stencil:true
+					});
 		} catch (e) {
 			console.log("Couldn't initialise GL context" + e.message);
 		}
@@ -91,11 +113,14 @@ GLProgram.prototype = {
 		this._.gl.clear(this._.gl.COLOR_BUFFER_BIT | this._.gl.DEPTH_BUFFER_BIT);
 	},
 
-	passLightUniforms: function(lightUniforms) {
+	passLightUniforms: function(lightUniforms, shaderObjectIndex) {
 		$.each(lightUniforms, function(uniformName, uniformValue) {
 			var UniformLoc = this._.gl.getUniformLocation(this._.shaderProgram, uniformName);
 			this._.gl.uniform4fv(UniformLoc, uniformValue);
 		}.bind(this));
+		
+		var IndexUniformLoc = this._.gl.getUniformLocation(this._.shaderProgram, "objectIndex");
+		this._.gl.uniform1f(IndexUniformLoc, shaderObjectIndex);
 	},
 
 	fillBuffers: function(model) {

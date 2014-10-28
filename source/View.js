@@ -41,7 +41,7 @@ View.prototype = {
 	},
 
 	produceCanvasHTML: function() {
-		var canvas = $("<canvas id='projectCanvas'><canvas>");
+		var canvas = $("<canvas id='projectCanvas'></canvas>");
 		canvas.attr({width: this._.canvasWidth, height: this._.canvasHeight});
 		canvas.css({
 			border: "1px solid black",

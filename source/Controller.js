@@ -1,5 +1,6 @@
 $("#projectAnchor").click(function() {
-	new Controller();
+	window.controller = new Controller();
+	console.log(controller);
 });
 
 function Controller () {
@@ -26,10 +27,10 @@ function Controller () {
 	this._.view.produceMenuButton("Test Button", this.testButtonFunction.bind(this));
 	this._.view.assembleGUI();
 
-	this._.inputHandler = new InputHandler(this);		
+	this._.inputHandler = new InputHandler(this, this._.view.getCanvas());		
 	this._.lastTime = (new Date()).getTime();
-
-	this.mainLoop();
+	
+	requestAnimationFrame(this.mainLoop.bind(this));
 };
 
 Controller.prototype = {		
@@ -152,5 +153,21 @@ Controller.prototype = {
 	keysShiftAndRight: function() {
 		var model = this._.sceneBuilder.getModelInFocus();
 		model.rotateZ(-10);
+	},
+	
+	mouseDown: function(mousePosition) {
+		if (mousePosition.button === 0) {
+			var scene = this._.sceneBuilder.getScene(this._.view.getCanvas());
+			var modelIndex = this._.gl.modelAt(mousePosition.x, mousePosition.y, scene);
+			console.log(modelIndex);
+		}
+	},
+	
+	mouseUp: function(mousePosition) {
+		console.log(mousePosition);
+	},
+	
+	mouseMove: function(mousePosition) {
+		console.log(mousePosition);
 	},
 };

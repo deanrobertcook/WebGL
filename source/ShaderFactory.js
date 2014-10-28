@@ -35,16 +35,22 @@ function ShaderFactory() {
 		'uniform vec4 ambientProduct;',
 		'uniform vec4 diffuseProduct;',
 		'uniform sampler2D texture;',
+		'uniform float objectIndex;',
+
 		
 		'varying vec3 n;',
 		'varying vec3 l;',
 		'varying vec2 vTexCoord;',
 		
 		'void main() {',
-			'vec4 ambient = ambientProduct;',
-			'vec4 diffuse = max(dot(l, n), 0.0) * diffuseProduct;',
-			'vec4 color = ambient + diffuse;',
-			'gl_FragColor = color * texture2D(texture, vTexCoord * 2.0);',
+			'if (objectIndex == -1.0) {',
+				'vec4 ambient = ambientProduct;',
+				'vec4 diffuse = max(dot(l, n), 0.0) * diffuseProduct;',
+				'vec4 color = ambient + diffuse;',
+				'gl_FragColor = color * texture2D(texture, vTexCoord * 2.0);',
+			'} else {',
+				'gl_FragColor = vec4(1.0, 0, objectIndex / 256.0, 1.0);',
+			'}',
 		'}'
 	].join("\n");
 };
