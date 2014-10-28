@@ -20,10 +20,9 @@ function Controller () {
 	this._.sceneBuilder = new SceneBuilder();
 	this._.gl = new GLProgram(this._.view.getCanvas());
 	
-	this._.view.produceMenuButton("Light/Cam Toggle", this.handleToggleClick.bind(this));
 	this._.view.produceMenuButton("Add Object", this.handleAddObjectButtonClick.bind(this));
 	this._.view.produceMenuButton("Remove Object", this.handleRemoveObjectButtonClick.bind(this));
-	this._.view.produceMenuButton("Next Cam", this._.sceneBuilder.cycleNextCamera);
+	this._.view.produceMenuButton("Next Cam", this._.sceneBuilder.cycleNextCamera.bind(this._.sceneBuilder));
 	this._.view.produceMenuButton("Test Button", this.testButtonFunction.bind(this));
 	this._.view.assembleGUI();
 
@@ -39,14 +38,6 @@ Controller.prototype = {
 	},
 	receiveUserCommand: function(command) {
 		console.log(command);
-	},
-
-	handleToggleClick: function() {
-		if(this.modelInFocus === this.cameras[this.currentCamera]) {
-			this.modelInFocus = this.lights[0];
-		} else if(this.modelInFocus === this.lights[0]) {
-			this.modelInFocus = this.cameras[this.currentCamera];
-		}
 	},
 
 	handleAddObjectButtonClick: function() {
