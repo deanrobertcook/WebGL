@@ -1,19 +1,16 @@
 function SceneBuilder() {
 	this._ = {
-		lights: [],
-		cameras: [],
-		currentCamera: 0,
+		lights: [], 
 
 		modelsToLoad: [ //filled out with a basic scene
 			"basic-cube-forward",
-			"camera-cube-left", 
-			"camera-cube-back", 
-			"basic-4pyramid-light", 
+			"camera-cube-left",  
+			"basic-4pyramid-light",
+			"camera-cube-back",
 		],
 		modelsLoaded: [],
-		selectedModel: -1,
-		
-		modelInFocus: null,
+		selectedModel: null,
+		currentCamera: null,
 
 		modelFactory: null,
 		textureLoader: null,
@@ -25,7 +22,7 @@ function SceneBuilder() {
 
 SceneBuilder.prototype = {
 	getScene: function(canvas) {
-		var viewMatrix = this._.cameras[this._.currentCamera].getViewMatrix();
+		var viewMatrix = this._.currentCamera.getViewMatrix();
 		var projectionMatrix = this.createProjectionMatrix(canvas);
 		this.prepareModelColor();
 
@@ -38,13 +35,22 @@ SceneBuilder.prototype = {
 	},
 	
 	setSelectedModel: function(modelIndex) {
-		this._.selectedModel = modelIndex;
+		modelIndex = modelIndex >= 0 ? modelIndex : this._.modelsLoaded.indexOf(this._.currentCamera);
+		this._.selectedModel = this._.modelsLoaded[modelIndex];
 	},
-
-	getModelInFocus: function() {
-		return this._.cameras[this._.currentCamera];
+	
+	getSelectedModel: function() {
+		return this._.selectedModel;
 	},
-
+	
+	setSelectedModelAsCamera: function() {
+		if (this._.selectedModel.isCamera()) {
+			this._.currentCamera = this.getSelectedModel();
+		} else {
+			console.log("Object not suitable as camera.");
+		}
+	},
+	
 	prepareModelColor: function() {
 		var sceneModels = this._.modelsLoaded;
 		for (var i = 0, l = sceneModels.length; i < l; i++) {
@@ -60,28 +66,30 @@ SceneBuilder.prototype = {
 		this._.modelsToLoad.push(modelName);
 	},
 
-	cycleNextCamera: function () {
-		var numCameras = this._.cameras.length;
-		this._.currentCamera = (this._.currentCamera + 1) % numCameras;
-	},
-
-	printCameras: function() {
-		console.log(this._.cameras);
-		console.log("Current Camera: " + this._.currentCamera);
-	},
-
-	deleteModelFromScene: function(modelIndex) {
-		modelIndex = modelIndex || this._.selectedModel;
-		this._.modelsLoaded.splice(modelIndex, 1);
+	deleteSelectedModel: function() {
+		if (this._.selectedModel === this._.currentCamera) {
+			console.log("Can't delete current camera model.");
+		} else {
+			var modelIndex = this._.modelsLoaded.indexOf(this._.selectedModel);
+			this._.modelsLoaded.splice(modelIndex, 1);
+			this.setSelectedModel();
+		}
 	},
 
 	handleModel: function(model) {
+		this._.modelsLoaded.push(model);
+		
+		if(!this._.selectedModel) {
+			this.setSelectedModel(0);
+		}
+		
+		if(!this._.currentCamera) {
+			this.setSelectedModelAsCamera();
+		}
+		
 		if (model.isLightSource()) {
 			this._.lights.push(model);
-		} if (model.isCamera()) {
-			this._.cameras.push(model);
 		}
-		this._.modelsLoaded.push(model);
 	},
 
 	loadModels: function() {

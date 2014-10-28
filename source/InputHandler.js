@@ -27,9 +27,7 @@ InputHandler.prototype = {
 		//Think of using a "key state object" that the controller checks,
 		//rather than calling a bajillion functions
 		
-		if(this._.keyBuffer[67]) { //c
-			this._.commandReceiver.keyC();
-		} if(this._.keyBuffer[65]) { //a
+		if(this._.keyBuffer[65]) { //a
 			this._.commandReceiver.keyA();
 		} if (this._.keyBuffer[83]) { //s
 			this._.commandReceiver.keyS();

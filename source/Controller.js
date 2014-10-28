@@ -1,6 +1,5 @@
 $("#projectAnchor").click(function() {
 	window.controller = new Controller();
-	console.log(controller);
 });
 
 function Controller () {
@@ -23,7 +22,8 @@ function Controller () {
 	
 	this._.view.produceMenuButton("Add Object", this.handleAddObjectButtonClick.bind(this));
 	this._.view.produceMenuButton("Remove Selected Object", this.handleRemoveObjectButtonClick.bind(this));
-	this._.view.produceMenuButton("Selected Object as Camera", this._.sceneBuilder.cycleNextCamera.bind(this._.sceneBuilder));
+	this._.view.produceMenuButton("Selected Object as Camera", this.handleChangeCameraClick.bind(this));
+	this._.view.produceMenuButton("Reset Current Camera as Selected", this.handleResetCurrentAsCameraClick.bind(this));
 	this._.view.produceMenuButton("Test Button", this.testButtonFunction.bind(this));
 	this._.view.assembleGUI();
 
@@ -44,7 +44,15 @@ Controller.prototype = {
 	},
 
 	handleRemoveObjectButtonClick: function() {
-		this._.sceneBuilder.deleteModelFromScene();
+		this._.sceneBuilder.deleteSelectedModel();
+	},
+	
+	handleChangeCameraClick: function() {
+		this._.sceneBuilder.setSelectedModelAsCamera();
+	},
+	
+	handleResetCurrentAsCameraClick: function() {
+		this._.sceneBuilder.setSelectedModel();
 	},
 
 	mainLoop: function() {
@@ -83,71 +91,67 @@ Controller.prototype = {
 	 */
 
 	keyW: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.translate(0, 0, -0.5);
 	},
 
 	keyA: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.translate(-0.5, 0, 0);
 	},
 
 	keyS: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.translate(0, 0, 0.5);
 	},
 
 	keyD: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.translate(0.5, 0, 0);
 	},
 
 	keyQ: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.translate(0, 0.5, 0);
 	},
 
 	keyE: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.translate(0, -0.5, 0);
 	},
 
-	keyC: function() {
-		this._.sceneBuilder.cycleNextCamera();
-	},
-
 	keyO: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.lookAtPosition(0, 0, 0);
 	},
 
 	keyUp: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.rotateX(10);
 	},
 
 	keyDown: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.rotateX(-10);
 	},
 
 	keyLeft: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.rotateY(10);
 	},
 
 	keyRight: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.rotateY(-10);
 	},
 
 	keysShiftAndLeft: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.rotateZ(10);
 	},
 
 	keysShiftAndRight: function() {
-		var model = this._.sceneBuilder.getModelInFocus();
+		var model = this._.sceneBuilder.getSelectedModel();
 		model.rotateZ(-10);
 	},
 	

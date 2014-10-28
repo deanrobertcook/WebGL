@@ -1,6 +1,7 @@
 {
 	 "rootnode": {
 		 "name": "Root"
+		,"camera": true
 		,"transformation": [
 			 1
 			,0
