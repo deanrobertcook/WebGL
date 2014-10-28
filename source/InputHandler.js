@@ -10,7 +10,7 @@ function InputHandler (commandReceiver, canvas) {
 	};
 	this._.commandReceiver = commandReceiver;
 	document.onkeydown = document.onkeyup = this.handleKeyPress.bind(this);
-	canvas.oncontextmenu = this.disableRightClick.bind(this);
+	$(canvas).on("contextmenu", this.disableRightClick.bind(this));
 	$(canvas).on("mousedown", this.handleMouseDown.bind(this));
 	$(canvas).on("mouseup", this.handleMouseUp.bind(this));
 	$(canvas).on("mousemove", this.handleMouseMove.bind(this));
@@ -65,7 +65,14 @@ InputHandler.prototype = {
 		event.stopPropagation();
 		event.preventDefault();
 		this._.mouseData.button = event.button;
-		this._.commandReceiver.mouseDown(this._.mouseData);
+		if (event.button === 0) {
+			this._.commandReceiver.leftMouseClick(this._.mouseData);
+		} else if (event.button === 1) {
+			this._.commandReceiver.middleMouseClick(this._.mouseData);
+		} else if (event.button === 2) {
+			this._.commandReceiver.rightMouseClick(this._.mouseData);
+		}
+		
 	},
 	
 	disableRightClick: function() {

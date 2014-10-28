@@ -20,11 +20,17 @@ function Controller () {
 	this._.sceneBuilder = new SceneBuilder();
 	this._.gl = new GLProgram(this._.view.getCanvas());
 	
-	this._.view.produceMenuButton("Add Object", this.handleAddObjectButtonClick.bind(this));
-	this._.view.produceMenuButton("Remove Selected Object", this.handleRemoveObjectButtonClick.bind(this));
-	this._.view.produceMenuButton("Selected Object as Camera", this.handleChangeCameraClick.bind(this));
-	this._.view.produceMenuButton("Reset Current Camera as Selected", this.handleResetCurrentAsCameraClick.bind(this));
-	this._.view.produceMenuButton("Test Button", this.testButtonFunction.bind(this));
+	this._.view.produceMenuButton("menu", "Add Object", this.handleAddObjectButtonClick.bind(this));
+	this._.view.produceMenuButton("menu", "Remove Selected Object", this.handleRemoveObjectButtonClick.bind(this));
+	this._.view.produceMenuButton("menu", "Selected Object as Camera", this.handleChangeCameraClick.bind(this));
+	this._.view.produceMenuButton("menu", "Reset Current Camera as Selected", this.handleResetCurrentAsCameraClick.bind(this));
+	
+	this._.view.produceMenuButton("rightClickMenu", "Test Button", this.testButtonFunction.bind(this));
+	this._.view.produceMenuButton("rightClickMenu", "Test Button", this.testButtonFunction.bind(this));
+	this._.view.produceMenuButton("rightClickMenu", "Test Button", this.testButtonFunction.bind(this));
+	this._.view.produceMenuButton("rightClickMenu", "Test Button", this.testButtonFunction.bind(this));
+	this._.view.produceMenuButton("rightClickMenu", "Test Button", this.testButtonFunction.bind(this));
+	
 	this._.view.assembleGUI();
 
 	this._.inputHandler = new InputHandler(this, this._.view.getCanvas());		
@@ -35,7 +41,7 @@ function Controller () {
 
 Controller.prototype = {		
 	testButtonFunction: function() {
-		
+		console.log("test button");
 	},
 
 	handleAddObjectButtonClick: function() {
@@ -154,12 +160,20 @@ Controller.prototype = {
 		model.rotateZ(-10);
 	},
 	
-	mouseDown: function(mousePosition) {
-		if (mousePosition.button === 0) {
-			var scene = this._.sceneBuilder.getScene(this._.view.getCanvas());
-			var modelIndex = this._.gl.modelAt(mousePosition.x, mousePosition.y, scene);
-			this._.sceneBuilder.setSelectedModel(modelIndex);
-		}
+	leftMouseClick: function(mousePosition) {
+		this._.view.hideRightClickMenu();
+		var scene = this._.sceneBuilder.getScene(this._.view.getCanvas());
+		var modelIndex = this._.gl.modelAt(mousePosition.x, mousePosition.y, scene);
+		this._.sceneBuilder.setSelectedModel(modelIndex);
+	},
+	
+	middleMouseClick: function(mousePosition) {
+		this._.view.hideRightClickMenu();
+		console.log(mousePosition);
+	},
+	
+	rightMouseClick: function(mousePosition) {
+		this._.view.displayRightClickMenu(mousePosition);
 	},
 	
 	mouseUp: function(mousePosition) {

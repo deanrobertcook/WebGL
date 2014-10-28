@@ -12,6 +12,7 @@ function View() {
 	this._.canvas = this.produceCanvasHTML();
 	this._.menu = this.produceMenuHTML();
 	this._.statusBar = this.produceStatusBarHTML();
+	this._.rightClickMenu = this.produceRightClickMenuHTML();
 };
 
 View.prototype = {
@@ -20,6 +21,7 @@ View.prototype = {
 		appArea.append(this._.statusBar);
 		appArea.append(this._.canvas);
 		appArea.append(this._.menu);
+		appArea.append(this._.rightClickMenu);
 		appArea = appArea.get(0);
 		$("#" + this._.htmlAnchorID).after(appArea);
 	},
@@ -67,13 +69,42 @@ View.prototype = {
 		menu = menu.get(0);
 		return menu;
 	},
-
-	produceMenuButton: function(label, handler) {
-		var button = $("<button>"+label+"</button>");
-		button.click(handler);
-		$(this._.menu).append(button);
+	
+	produceRightClickMenuHTML: function() {
+		var menu = $("<nav id='rightClickMenu'></nav>");
+		menu.css({
+			width: "150px",
+			border: "1px solid black",
+			"border-left": 0,
+			"background-color": "grey",
+			display: "none",
+			position: "absolute",
+		});
+		menu.on("contextmenu", function() {return false;});
+		menu = menu.get(0);
+		return menu;
 	},
 
+	produceMenuButton: function(menu, label, handler) {
+		var button = $("<button>"+label+"</button>");
+		button.click(handler);
+		$(this._[menu]).append(button);
+	},
+	
+	displayRightClickMenu: function(mousePosition) {
+		$(this._.rightClickMenu).css({
+			top: (this._.canvas.height - mousePosition.y + $(this._.canvas).position().top) + "px",
+			left: (mousePosition.x + $(this._.canvas).position().left) + "px",
+			display: "block",
+		});
+	},
+	
+	hideRightClickMenu: function() {
+		$(this._.rightClickMenu).css({
+			display: "none",
+		});
+	},
+	
 	getCanvas: function() {
 		if(this._.canvas !== null) {
 			return this._.canvas;
