@@ -22,8 +22,8 @@ function Controller () {
 	this._.gl = new GLProgram(this._.view.getCanvas());
 	
 	this._.view.produceMenuButton("Add Object", this.handleAddObjectButtonClick.bind(this));
-	this._.view.produceMenuButton("Remove Object", this.handleRemoveObjectButtonClick.bind(this));
-	this._.view.produceMenuButton("Next Cam", this._.sceneBuilder.cycleNextCamera.bind(this._.sceneBuilder));
+	this._.view.produceMenuButton("Remove Selected Object", this.handleRemoveObjectButtonClick.bind(this));
+	this._.view.produceMenuButton("Selected Object as Camera", this._.sceneBuilder.cycleNextCamera.bind(this._.sceneBuilder));
 	this._.view.produceMenuButton("Test Button", this.testButtonFunction.bind(this));
 	this._.view.assembleGUI();
 
@@ -37,9 +37,6 @@ Controller.prototype = {
 	testButtonFunction: function() {
 		console.log(this._.sceneBuilder.getScene(this._.view.getCanvas()));
 	},
-	receiveUserCommand: function(command) {
-		console.log(command);
-	},
 
 	handleAddObjectButtonClick: function() {
 		var newMesh = prompt("Enter an object mesh file name: ");
@@ -47,8 +44,7 @@ Controller.prototype = {
 	},
 
 	handleRemoveObjectButtonClick: function() {
-		var modelIndex = prompt("Enter the index of the model to be removed: ");
-		this._.sceneBuilder.deleteModelFromScene(modelIndex);
+		this._.sceneBuilder.deleteModelFromScene();
 	},
 
 	mainLoop: function() {
@@ -159,15 +155,15 @@ Controller.prototype = {
 		if (mousePosition.button === 0) {
 			var scene = this._.sceneBuilder.getScene(this._.view.getCanvas());
 			var modelIndex = this._.gl.modelAt(mousePosition.x, mousePosition.y, scene);
-			console.log(modelIndex);
+			this._.sceneBuilder.setSelectedModel(modelIndex);
 		}
 	},
 	
 	mouseUp: function(mousePosition) {
-		console.log(mousePosition);
+		//console.log(mousePosition);
 	},
 	
 	mouseMove: function(mousePosition) {
-		console.log(mousePosition);
+		//console.log(mousePosition);
 	},
 };

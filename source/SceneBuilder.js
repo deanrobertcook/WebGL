@@ -11,6 +11,8 @@ function SceneBuilder() {
 			"basic-4pyramid-light", 
 		],
 		modelsLoaded: [],
+		selectedModel: -1,
+		
 		modelInFocus: null,
 
 		modelFactory: null,
@@ -33,6 +35,10 @@ SceneBuilder.prototype = {
 			sceneModels: this._.modelsLoaded,
 		}
 		return scene;
+	},
+	
+	setSelectedModel: function(modelIndex) {
+		this._.selectedModel = modelIndex;
 	},
 
 	getModelInFocus: function() {
@@ -65,6 +71,7 @@ SceneBuilder.prototype = {
 	},
 
 	deleteModelFromScene: function(modelIndex) {
+		modelIndex = modelIndex || this._.selectedModel;
 		this._.modelsLoaded.splice(modelIndex, 1);
 	},
 
