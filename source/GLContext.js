@@ -18,6 +18,29 @@ function GLContext(canvas) {
 };
 
 GLContext.prototype = {
+	drawScene: function(scene) {	
+			this.clearViewport();
+		
+			this.passViewMatrix(scene.viewMatrix);
+			this.passProjectionMatrix(scene.projectionMatrix);
+
+			var sceneModels = scene.sceneModels;
+			for (var i = 0, l = sceneModels.length; i < l; i++) {
+				var model = sceneModels[i];
+				this.passLightUniforms(model.lightUniforms);
+				
+				if (model.hasWebGLTexture()) {
+					this.passTexture(model.texture);
+				} else {
+					this.assignGLTexture(model.texture);
+				}
+				
+				this.fillBuffers(model);
+				this.initialiseAttributes();
+				this.drawObject(model.getModelMatrix());
+			}
+		},
+	
 	initGL: function(canvas) {
 		try {
 			this.gl = canvas.getContext("experimental-webgl");

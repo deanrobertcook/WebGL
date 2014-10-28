@@ -1,4 +1,4 @@
-function View(program) {
+function View() {
 	this.htmlAnchorID = "projectAnchor";
 	
 	this.canvasHeight = 500;//window.innerHeight;

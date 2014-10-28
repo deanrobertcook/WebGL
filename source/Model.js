@@ -15,6 +15,8 @@ function Model() {
 	
 	this.reflectionAmbient = vec3.fromValues(1, 1, 1);
 	this.reflectionDiffuse = vec3.fromValues(1, 1, 1);
+	
+	this.lightingUniforms;
 }
 
 Model.prototype = {

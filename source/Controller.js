@@ -22,7 +22,7 @@ var Controller = (function() {
 		private.view.produceMenuButton("Add Object", this.handleAddObjectButtonClick.bind(this));
 		private.view.produceMenuButton("Remove Object", this.handleRemoveObjectButtonClick.bind(this));
 		private.view.produceMenuButton("Next Cam", private.sceneBuilder.cycleNextCamera);
-		private.view.produceMenuButton("Test Button", private.sceneBuilder.printCameras);
+		private.view.produceMenuButton("Test Button", this.testButtonFunction.bind(this));
 		private.view.assembleGUI();
 
 		private.gl = new GLContext(private.view.getCanvas());
@@ -41,6 +41,10 @@ var Controller = (function() {
 	};
 	
 	Controller.prototype = {
+		testButtonFunction: function() {
+			console.log(private.sceneBuilder.getScene(private.view.getCanvas()));
+		},
+		
 		receiveUserCommand: function(command) {
 			console.log(command);
 		},
@@ -69,7 +73,8 @@ var Controller = (function() {
 			}
 
 			private.sceneBuilder.loadModels();
-			private.sceneBuilder.drawScene(private.gl, private.view.getCanvas());
+			var scene = private.sceneBuilder.getScene(private.view.getCanvas());
+			private.gl.drawScene(scene);
 
 			var elapsedTime = this.getElapsedTimeInSeconds();
 			if (this.frame > 30) {

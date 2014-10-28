@@ -6,8 +6,8 @@ var SceneBuilder = (function() {
 		
 		modelsToLoad: [ //filled out with a basic scene
 			"basic-cube-forward",
-			"camera-cube-back", 
 			"camera-cube-left", 
+			"camera-cube-back", 
 			"basic-4pyramid-light", 
 		],
 		modelsLoaded: [],
@@ -22,34 +22,28 @@ var SceneBuilder = (function() {
 	}
 
 	SceneBuilder.prototype = {
-		drawScene: function(glContext, canvas) {	
-			if (private.cameras.length > 0) {
-				var camera = private.cameras[private.currentCamera];
-				glContext.passViewMatrix(camera.getViewMatrix());
-			}
-
-			glContext.clearViewport();
-
+		getScene: function(canvas) {
+			var viewMatrix = private.cameras[private.currentCamera].getViewMatrix();
 			var projectionMatrix = this.createProjectionMatrix(canvas);
-			glContext.passProjectionMatrix(projectionMatrix);
-
+			this.prepareModelColor();
+			
+			var scene = {
+				viewMatrix: viewMatrix,
+				projectionMatrix: projectionMatrix,
+				sceneModels: private.modelsLoaded,
+				
+			}
+			return scene;
+		},
+		
+		prepareModelColor: function() {
 			var sceneModels = private.modelsLoaded;
 			for (var i = 0, l = sceneModels.length; i < l; i++) {
 				var model = sceneModels[i];
-				glContext.passLightUniforms(
-						this.createLightUniforms(model));
-				if (model.textureIsLoaded()) {
-					if (model.hasWebGLTexture()) {
-						glContext.passTexture(model.texture);
-					} else {
-						glContext.assignGLTexture(model.texture);
-					}
-				} else {
+				model.lightUniforms = this.createLightUniforms(model);
+				if (!model.textureIsLoaded()) {
 					private.textureLoader.loadTextureFor(model);
 				}
-				glContext.fillBuffers(model);
-				glContext.initialiseAttributes();
-				glContext.drawObject(model.getModelMatrix());
 			}
 		},
 
