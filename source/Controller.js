@@ -40,7 +40,7 @@ var Controller = (function() {
 		this.mainLoop();
 	};
 	
-	Controller.prototype = {
+	Controller.prototype = {		
 		testButtonFunction: function() {
 			console.log(private.sceneBuilder.getScene(private.view.getCanvas()));
 		},
@@ -95,6 +95,79 @@ var Controller = (function() {
 		getRefreshRate: function(elapsedTime) {
 			var refreshRate = 1 / elapsedTime;
 			return Math.floor(refreshRate);
+		},
+		
+		/* 
+		 * User input controls 
+		 */
+		
+		keyW: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.translate(0, 0, -0.5);
+		},
+		
+		keyA: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.translate(-0.5, 0, 0);
+		},
+		
+		keyS: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.translate(0, 0, 0.5);
+		},
+		
+		keyD: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.translate(0.5, 0, 0);
+		},
+		
+		keyQ: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.translate(0, 0.5, 0);
+		},
+		
+		keyE: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.translate(0, -0.5, 0);
+		},
+		
+		keyC: function() {
+			private.sceneBuilder.cycleNextCamera();
+		},
+		
+		keyO: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.lookAtPosition(0, 0, 0);
+		},
+		
+		keyUp: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.rotateX(10);
+		},
+		
+		keyDown: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.rotateX(-10);
+		},
+		
+		keyLeft: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.rotateY(10);
+		},
+		
+		keyRight: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.rotateY(-10);
+		},
+		
+		keysShiftAndLeft: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.rotateZ(10);
+		},
+		
+		keysShiftAndRight: function() {
+			var model = private.sceneBuilder.getModelInFocus();
+			model.rotateZ(-10);
 		},
 	};
 	return Controller;

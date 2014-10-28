@@ -1,6 +1,6 @@
 var EventHandler = (function() {
 	var private = {
-		controller: null,
+		commandReceiver: null,
 		keyBuffer: [],
 		logKeyBufferToConsole: function() {
 			for (var i = 0, l = private.keyBuffer.length; i < l; i++) {
@@ -11,8 +11,8 @@ var EventHandler = (function() {
 		}
 	};
 	
-	function EventHandler (controller) {
-		private.controller = controller;
+	function EventHandler (commandReceiver) {
+		private.commandReceiver = commandReceiver;
 		document.onkeydown = document.onkeyup = this.handleKeyPress.bind(this);
 	};
 
@@ -25,28 +25,37 @@ var EventHandler = (function() {
 			private.keyBuffer[event.keyCode] = event.type == "keydown";
 			
 			if(private.keyBuffer[67]) { //c
-				private.controller.receiveUserCommand("nextCam");
-			}
-
-
-			if(private.keyBuffer[65]) { //a
-				private.controller.receiveUserCommand("strafeLeft");
+				private.commandReceiver.keyC();
+			} if(private.keyBuffer[65]) { //a
+				private.commandReceiver.keyA();
 			} if (private.keyBuffer[83]) { //s
+				private.commandReceiver.keyS();
 			} if (private.keyBuffer[68]) { //d
+				private.commandReceiver.keyD();
 			} if (private.keyBuffer[81]) { //q
+				private.commandReceiver.keyQ();
 			} if (private.keyBuffer[87]) { //w
+				private.commandReceiver.keyW();
 			} if (private.keyBuffer[69]) { //e
+				private.commandReceiver.keyE();
 			} if (private.keyBuffer[38]) { //up
+				private.commandReceiver.keyUp();
 			} if (private.keyBuffer[40]) { //down
+				private.commandReceiver.keyDown();
 			} if (private.keyBuffer[37]) { //left
 				if(private.keyBuffer[16]){ //shift
+					private.commandReceiver.keysShiftAndLeft();
 				} else {
+					private.commandReceiver.keyLeft();
 				}
 			} if (private.keyBuffer[39]) { //right
 				if(private.keyBuffer[16]){ //shift
+					private.commandReceiver.keysShiftAndRight();
 				} else {
+					private.commandReceiver.keyRight();
 				}
 			} if (private.keyBuffer[79]) { //o
+				private.commandReceiver.keyO();
 			}
 		},
 		

@@ -11,6 +11,7 @@ var SceneBuilder = (function() {
 			"basic-4pyramid-light", 
 		],
 		modelsLoaded: [],
+		modelInFocus: null,
 		
 		modelFactory: null,
 		textureLoader: null,
@@ -34,6 +35,10 @@ var SceneBuilder = (function() {
 				
 			}
 			return scene;
+		},
+		
+		getModelInFocus: function() {
+			return private.cameras[private.currentCamera];
 		},
 		
 		prepareModelColor: function() {

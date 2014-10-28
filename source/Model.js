@@ -94,7 +94,7 @@ Model.prototype = {
 		return position;
 	},
 	
-	lookAtOrigin: function(x, y, z) {
+	lookAtPosition: function(x, y, z) {
 		mat4.invert(this.modelMatrix, mat4.lookAt(mat4.create(), this.getPosition(), [x, y, z], [0, 1, 0]));
 
 	},
