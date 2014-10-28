@@ -11,6 +11,7 @@ function ShaderFactory() {
 		
 		'varying vec3 n;',
 		'varying vec3 l;',
+		'varying vec3 h;',
 		'varying vec2 vTexCoord;',
 		
 		'void main() {',
@@ -23,6 +24,8 @@ function ShaderFactory() {
 			
 			'n = normalize(normalCamCoords.xyz);',
 			'l = normalize(lightPositionCamCoords.xyz - positionCamCoords.xyz);',
+			'vec3 e = normalize(-positionCamCoords.xyz);',
+			'h = normalize(l + e);',
 			
 			'gl_PointSize = 2.0;',
 			'gl_Position = projectionMatrix * positionCamCoords;',
@@ -34,20 +37,25 @@ function ShaderFactory() {
 		
 		'uniform vec4 ambientProduct;',
 		'uniform vec4 diffuseProduct;',
+		'uniform vec4 specularProduct;',
+		'uniform float shininess;',
+		
 		'uniform sampler2D texture;',
 		'uniform float objectIndex;',
 
 		
 		'varying vec3 n;',
 		'varying vec3 l;',
+		'varying vec3 h;',
 		'varying vec2 vTexCoord;',
 		
 		'void main() {',
 			'if (objectIndex == -1.0) {',
 				'vec4 ambient = ambientProduct;',
 				'vec4 diffuse = max(dot(l, n), 0.0) * diffuseProduct;',
+				'vec4 specular = pow(max(dot(h, n), 0.0), shininess) * specularProduct;',
 				'vec4 color = ambient + diffuse;',
-				'gl_FragColor = color * texture2D(texture, vTexCoord * 2.0);',
+				'gl_FragColor = color * texture2D(texture, vTexCoord * 2.0) + specular;',
 			'} else {',
 				'gl_FragColor = vec4(1.0, 0, objectIndex / 256.0, 1.0);',
 			'}',

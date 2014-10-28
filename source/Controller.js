@@ -35,7 +35,7 @@ function Controller () {
 
 Controller.prototype = {		
 	testButtonFunction: function() {
-		console.log(this._.sceneBuilder.getScene(this._.view.getCanvas()));
+		
 	},
 
 	handleAddObjectButtonClick: function() {

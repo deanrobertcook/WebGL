@@ -116,7 +116,11 @@ GLProgram.prototype = {
 	passLightUniforms: function(lightUniforms, shaderObjectIndex) {
 		$.each(lightUniforms, function(uniformName, uniformValue) {
 			var UniformLoc = this._.gl.getUniformLocation(this._.shaderProgram, uniformName);
-			this._.gl.uniform4fv(UniformLoc, uniformValue);
+			if (uniformName === "shininess") {
+				this._.gl.uniform1f(UniformLoc, uniformValue);
+			} else {
+				this._.gl.uniform4fv(UniformLoc, uniformValue);
+			}
 		}.bind(this));
 		
 		var IndexUniformLoc = this._.gl.getUniformLocation(this._.shaderProgram, "objectIndex");

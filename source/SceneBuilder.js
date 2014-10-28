@@ -6,6 +6,7 @@ function SceneBuilder() {
 			"basic-cube-forward",
 			"camera-cube-left",  
 			"basic-4pyramid-light",
+			"model0",
 			"camera-cube-back",
 		],
 		modelsLoaded: [],
@@ -117,6 +118,12 @@ SceneBuilder.prototype = {
 		//diffuse product
 		var diffuseProduct = vec3.multiply(vec3.create(), this._.lights[0].lightSource.diffuse, model.reflectionDiffuse);
 		diffuseProduct = vec4.fromValues(diffuseProduct[0], diffuseProduct[1], diffuseProduct[2], 1.0);
+		
+		//diffuse product
+		var specularProduct = vec3.multiply(vec3.create(), this._.lights[0].lightSource.specular, model.reflectionSpecular);
+		specularProduct = vec4.fromValues(specularProduct[0], specularProduct[1], specularProduct[2], 1.0);
+
+		var shininess = model.shininess;
 
 		//light position
 		var lightPosition = this._.lights[0].getPosition();
@@ -124,6 +131,8 @@ SceneBuilder.prototype = {
 		return {
 			ambientProduct: ambientProduct,
 			diffuseProduct: diffuseProduct,
+			specularProduct: specularProduct,
+			shininess: shininess,
 			lightPosition: lightPosition
 		};
 	},

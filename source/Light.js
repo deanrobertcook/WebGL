@@ -1,7 +1,7 @@
 function Light() {
 	this.ambient = vec3.fromValues(0.2, 0.2, 0.2);
 	this.diffuse = vec3.fromValues(0.8, 0.8, 0.8);
-	this.specular;
+	this.specular = vec3.fromValues(0.8, 0.8, 0.8);
 };
 
 Light.prototype = {	
