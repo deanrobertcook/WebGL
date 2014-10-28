@@ -1,9 +1,9 @@
-var SceneBuilder = (function() {
-	var private = {
+function SceneBuilder() {
+	this._ = {
 		lights: [],
 		cameras: [],
 		currentCamera: 0,
-		
+
 		modelsToLoad: [ //filled out with a basic scene
 			"basic-cube-forward",
 			"camera-cube-left", 
@@ -12,108 +12,104 @@ var SceneBuilder = (function() {
 		],
 		modelsLoaded: [],
 		modelInFocus: null,
-		
+
 		modelFactory: null,
 		textureLoader: null,
 	};
-	
-	function SceneBuilder() {
-		private.modelFactory = new ModelFactory();
-		private.textureLoader = new TextureLoader();
-	}
 
-	SceneBuilder.prototype = {
-		getScene: function(canvas) {
-			var viewMatrix = private.cameras[private.currentCamera].getViewMatrix();
-			var projectionMatrix = this.createProjectionMatrix(canvas);
-			this.prepareModelColor();
-			
-			var scene = {
-				viewMatrix: viewMatrix,
-				projectionMatrix: projectionMatrix,
-				sceneModels: private.modelsLoaded,
-				
+	this._.modelFactory = new ModelFactory();
+	this._.textureLoader = new TextureLoader();
+}
+
+SceneBuilder.prototype = {
+	getScene: function(canvas) {
+		var viewMatrix = this._.cameras[this._.currentCamera].getViewMatrix();
+		var projectionMatrix = this.createProjectionMatrix(canvas);
+		this.prepareModelColor();
+
+		var scene = {
+			viewMatrix: viewMatrix,
+			projectionMatrix: projectionMatrix,
+			sceneModels: this._.modelsLoaded,
+		}
+		return scene;
+	},
+
+	getModelInFocus: function() {
+		return this._.cameras[this._.currentCamera];
+	},
+
+	prepareModelColor: function() {
+		var sceneModels = this._.modelsLoaded;
+		for (var i = 0, l = sceneModels.length; i < l; i++) {
+			var model = sceneModels[i];
+			model.lightUniforms = this.createLightUniforms(model);
+			if (!model.textureIsLoaded()) {
+				this._.textureLoader.loadTextureFor(model);
 			}
-			return scene;
-		},
-		
-		getModelInFocus: function() {
-			return private.cameras[private.currentCamera];
-		},
-		
-		prepareModelColor: function() {
-			var sceneModels = private.modelsLoaded;
-			for (var i = 0, l = sceneModels.length; i < l; i++) {
-				var model = sceneModels[i];
-				model.lightUniforms = this.createLightUniforms(model);
-				if (!model.textureIsLoaded()) {
-					private.textureLoader.loadTextureFor(model);
-				}
-			}
-		},
+		}
+	},
 
-		addModelToScene: function(modelName) {
-			private.modelsToLoad.push(modelName);
-		},
-		
-		cycleNextCamera: function () {
-			var numCameras = private.cameras.length;
-			private.currentCamera = (private.currentCamera + 1) % numCameras;
-		},
-		
-		printCameras: function() {
-			console.log(private.cameras);
-			console.log("Current Camera: " + private.currentCamera);
-		},
+	addModelToScene: function(modelName) {
+		this._.modelsToLoad.push(modelName);
+	},
 
-		deleteModelFromScene: function(modelIndex) {
-			private.modelsLoaded.splice(modelIndex, 1);
-		},
+	cycleNextCamera: function () {
+		var numCameras = this._.cameras.length;
+		this._.currentCamera = (this._.currentCamera + 1) % numCameras;
+	},
 
-		handleModel: function(model) {
-			if (model.isLightSource()) {
-				private.lights.push(model);
-			} if (model.isCamera()) {
-				private.cameras.push(model);
-			}
-			private.modelsLoaded.push(model);
-		},
+	printCameras: function() {
+		console.log(this._.cameras);
+		console.log("Current Camera: " + this._.currentCamera);
+	},
 
-		loadModels: function() {
-			if (private.modelsToLoad.length > 0) {
-				var model = private.modelsToLoad.pop();
-				private.modelFactory.loadModel(model, this.handleModel.bind(this));
-			}
-		},
+	deleteModelFromScene: function(modelIndex) {
+		this._.modelsLoaded.splice(modelIndex, 1);
+	},
 
-		createProjectionMatrix: function(canvas) {
-			var projectionMatrix = mat4.create();
-			var nearDist	= 0.01,
-				farDist		= 500,
-				fovy = 45,
-				aspectRatio	= canvas.clientWidth/canvas.clientHeight;
-			mat4.perspective(projectionMatrix, fovy, aspectRatio, nearDist, farDist);
-			return projectionMatrix;
-		},
+	handleModel: function(model) {
+		if (model.isLightSource()) {
+			this._.lights.push(model);
+		} if (model.isCamera()) {
+			this._.cameras.push(model);
+		}
+		this._.modelsLoaded.push(model);
+	},
 
-		createLightUniforms: function(model) {
-			//ambient product
-			var ambientProduct = vec3.multiply(vec3.create(), private.lights[0].lightSource.ambient, model.reflectionAmbient);
-			ambientProduct = vec4.fromValues(ambientProduct[0], ambientProduct[1], ambientProduct[2], 1.0);
+	loadModels: function() {
+		if (this._.modelsToLoad.length > 0) {
+			var model = this._.modelsToLoad.pop();
+			this._.modelFactory.loadModel(model, this.handleModel.bind(this));
+		}
+	},
 
-			//diffuse product
-			var diffuseProduct = vec3.multiply(vec3.create(), private.lights[0].lightSource.diffuse, model.reflectionDiffuse);
-			diffuseProduct = vec4.fromValues(diffuseProduct[0], diffuseProduct[1], diffuseProduct[2], 1.0);
+	createProjectionMatrix: function(canvas) {
+		var projectionMatrix = mat4.create();
+		var nearDist	= 0.01,
+			farDist		= 500,
+			fovy = 45,
+			aspectRatio	= canvas.clientWidth/canvas.clientHeight;
+		mat4.perspective(projectionMatrix, fovy, aspectRatio, nearDist, farDist);
+		return projectionMatrix;
+	},
 
-			//light position
-			var lightPosition = private.lights[0].getPosition();
+	createLightUniforms: function(model) {
+		//ambient product
+		var ambientProduct = vec3.multiply(vec3.create(), this._.lights[0].lightSource.ambient, model.reflectionAmbient);
+		ambientProduct = vec4.fromValues(ambientProduct[0], ambientProduct[1], ambientProduct[2], 1.0);
 
-			return {
-				ambientProduct: ambientProduct,
-				diffuseProduct: diffuseProduct,
-				lightPosition: lightPosition
-			};
-		},
-	};
-	return SceneBuilder;
-})();
+		//diffuse product
+		var diffuseProduct = vec3.multiply(vec3.create(), this._.lights[0].lightSource.diffuse, model.reflectionDiffuse);
+		diffuseProduct = vec4.fromValues(diffuseProduct[0], diffuseProduct[1], diffuseProduct[2], 1.0);
+
+		//light position
+		var lightPosition = this._.lights[0].getPosition();
+
+		return {
+			ambientProduct: ambientProduct,
+			diffuseProduct: diffuseProduct,
+			lightPosition: lightPosition
+		};
+	},
+};
