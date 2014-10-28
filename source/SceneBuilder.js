@@ -120,7 +120,7 @@ SceneBuilder.prototype = {
 		diffuseProduct = vec4.fromValues(diffuseProduct[0], diffuseProduct[1], diffuseProduct[2], 1.0);
 		
 		//diffuse product
-		var specularProduct = vec3.multiply(vec3.create(), this._.lights[0].lightSource.specular, model.reflectionSpecular);
+		var specularProduct = this._.lights[0].lightSource.specular;
 		specularProduct = vec4.fromValues(specularProduct[0], specularProduct[1], specularProduct[2], 1.0);
 
 		var shininess = model.shininess;

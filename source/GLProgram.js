@@ -31,6 +31,7 @@ function GLProgram(canvas) {
 
 GLProgram.prototype = {
 	drawScene: function(scene, pickMode) {
+//		console.log(scene);
 		pickMode = !! pickMode;
 		
 		this.clearViewport();

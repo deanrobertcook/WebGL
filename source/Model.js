@@ -13,9 +13,8 @@ function Model() {
 	
 	this.modelMatrix = mat4.create();
 	
-	this.reflectionAmbient = vec3.fromValues(1, 1, 1);
-	this.reflectionDiffuse = vec3.fromValues(1, 1, 1);
-	this.reflectionSpecular = vec3.fromValues(1, 1, 1);
+	this.reflectionAmbient = vec3.fromValues(0.3, 0.3, 0.3);
+	this.reflectionDiffuse = vec3.fromValues(0.3, 0.3, 0.3);
 	
 	this.shininess = 1.5;
 	

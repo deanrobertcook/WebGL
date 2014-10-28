@@ -59,7 +59,6 @@ Controller.prototype = {
 		if ((this._.loops < this._.loopLimit) || !this._.limitLoops) {
 			window.requestAnimationFrame(this.mainLoop.bind(this));
 		}
-
 		this._.sceneBuilder.loadModels();
 		var scene = this._.sceneBuilder.getScene(this._.view.getCanvas());
 		this._.gl.drawScene(scene);
@@ -92,32 +91,32 @@ Controller.prototype = {
 
 	keyW: function() {
 		var model = this._.sceneBuilder.getSelectedModel();
-		model.translate(0, 0, -0.5);
+		model.translate(0, 0, -2);
 	},
 
 	keyA: function() {
 		var model = this._.sceneBuilder.getSelectedModel();
-		model.translate(-0.5, 0, 0);
+		model.translate(-2, 0, 0);
 	},
 
 	keyS: function() {
 		var model = this._.sceneBuilder.getSelectedModel();
-		model.translate(0, 0, 0.5);
+		model.translate(0, 0, 2);
 	},
 
 	keyD: function() {
 		var model = this._.sceneBuilder.getSelectedModel();
-		model.translate(0.5, 0, 0);
+		model.translate(2, 0, 0);
 	},
 
 	keyQ: function() {
 		var model = this._.sceneBuilder.getSelectedModel();
-		model.translate(0, 0.5, 0);
+		model.translate(0, 2, 0);
 	},
 
 	keyE: function() {
 		var model = this._.sceneBuilder.getSelectedModel();
-		model.translate(0, -0.5, 0);
+		model.translate(0, -2, 0);
 	},
 
 	keyO: function() {
